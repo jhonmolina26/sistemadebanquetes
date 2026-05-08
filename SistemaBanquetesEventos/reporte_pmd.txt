@@ -1,0 +1,42 @@
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\app\App.java:5:	UseUtilityClass:	All methods are static. Consider adding a private no-args constructor to prevent instantiation.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\modules\Cliente.java:13:	UncommentedEmptyConstructor:	Document empty constructor
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\modules\ClienteTuristico.java:40:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Itinerarios.java:15:	UnusedPrivateField:	Avoid unused private fields such as 'menu'.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Itinerarios.java:84:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Itinerarios.java:85:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\LugaresTuristicos.java:43:	MethodNamingConventions:	The instance method name 'añadir' doesn't match '[a-z][a-zA-Z0-9]*'
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\LugaresTuristicos.java:49:	UseLocaleWithCaseConversions:	When doing a String.toLowerCase()/toUpperCase() call, use a Locale
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\LugaresTuristicos.java:52:	UseLocaleWithCaseConversions:	When doing a String.toLowerCase()/toUpperCase() call, use a Locale
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\LugaresTuristicos.java:52:	UseLocaleWithCaseConversions:	When doing a String.toLowerCase()/toUpperCase() call, use a Locale
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\LugaresTuristicos.java:57:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\LugaresTuristicos.java:57:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\LugaresTuristicos.java:62:	OneDeclarationPerLine:	Use one line for each declaration, it enhances code readability.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\MenuPrincipal.java:11:	SingularField:	Perhaps 'panelClientes' could be replaced by a local variable.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\MenuPrincipal.java:12:	SingularField:	Perhaps 'panelPagos' could be replaced by a local variable.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\MenuPrincipal.java:13:	SingularField:	Perhaps 'panelItinerarios' could be replaced by a local variable.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\MenuPrincipal.java:14:	SingularField:	Perhaps 'panelLugares' could be replaced by a local variable.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\MenuPrincipal.java:15:	SingularField:	Perhaps 'panelReserva' could be replaced by a local variable.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\MenuPrincipal.java:21:	UnnecessaryFullyQualifiedName:	Unnecessary qualifier 'JFrame': 'EXIT_ON_CLOSE' is already in scope because it is inherited by an enclosing type
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:12:	OneDeclarationPerLine:	Use one line for each declaration, it enhances code readability.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:43:	AssignmentInOperand:	Avoid assignment to y in operand
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:48:	AssignmentInOperand:	Avoid assignment to y in operand
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:53:	AssignmentInOperand:	Avoid assignment to y in operand
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:58:	AssignmentInOperand:	Avoid assignment to y in operand
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:63:	AssignmentInOperand:	Avoid assignment to y in operand
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:68:	AssignmentInOperand:	Avoid assignment to y in operand
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:79:	AssignmentInOperand:	Avoid assignment to y in operand
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:118:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:119:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:174:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:186:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Pagos.java:192:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Reserva.java:9:	OneDeclarationPerLine:	Use one line for each declaration, it enhances code readability.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Reserva.java:59:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Reserva.java:84:	UselessParentheses:	Useless parentheses around `lugar == null ? "" : lugar`.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Reserva.java:127:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\cClientesTuristicos.java:10:	ClassNamingConventions:	The class name 'cClientesTuristicos' doesn't match '[A-Z][a-zA-Z0-9]*'
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\cClientesTuristicos.java:11:	OneDeclarationPerLine:	Use one line for each declaration, it enhances code readability.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\cClientesTuristicos.java:65:	MissingOverride:	The method 'mouseClicked(MouseEvent)' is missing an @Override annotation.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\cClientesTuristicos.java:100:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\cClientesTuristicos.java:102:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\cClientesTuristicos.java:203:	ControlStatementBraces:	This statement should have braces

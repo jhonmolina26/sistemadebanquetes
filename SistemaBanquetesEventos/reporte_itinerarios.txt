@@ -1,0 +1,3 @@
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Itinerarios.java:15:	UnusedPrivateField:	Avoid unused private fields such as 'menu'.
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Itinerarios.java:84:	ControlStatementBraces:	This statement should have braces
+C:\Users\Carleetos\Documents\NetBeansProjects\Viajeros_360\src\main\java\ui\Itinerarios.java:85:	ControlStatementBraces:	This statement should have braces

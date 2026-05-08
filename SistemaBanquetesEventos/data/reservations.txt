@@ -1,0 +1,3 @@
+Carlos;0953691763;0993377008;caudief@gmail.com;Montañita;1;20.0
+Fabrizio Pita;0951733179;0982568659;fp@gmail.com;Montañita;2;80,00
+fabrizio;0951733179;0982568659;FP@GMAIL.COM;Cotopaxi;2;70,00
