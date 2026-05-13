@@ -1,4 +1,4 @@
-package ui;
+package Vista;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;

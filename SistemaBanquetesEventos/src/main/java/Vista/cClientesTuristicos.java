@@ -1,9 +1,8 @@
-package ui;
+package Vista;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -13,6 +12,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import ui.components.PlaceholderTextField;
 import ui.components.RoundedButton;
+import controller.AnfitrionController;
+import models.Anfitrion;
 
 public class cClientesTuristicos extends JPanel {
 
@@ -29,18 +30,17 @@ public class cClientesTuristicos extends JPanel {
     private RoundedButton btnGuardar;
     private RoundedButton btnNuevo;
 
-    private List<Cliente> clientes;
+    private List<Anfitrion> anfitriones;
     private int selectedIndex = -1;
 
-    // Columnas de la tabla
+    // --- USO DEL CONTROLADOR EN VEZ DEL DAO ---
+    private AnfitrionController controller = new AnfitrionController();
+    private int selectedId = -1;
+
     private final String[] columnNames = {"Anfitrion", "Segmento", "Telefono", "Correo", "Próximo evento", "★ VIP", "Acción"};
 
     public cClientesTuristicos() {
-        clientes = new ArrayList<>();
-        // Datos iniciales de ejemplo
-        clientes.add(new Cliente("Daniela Mite", "", "0900000001", "daniela@correo.com", "0992011001", "Social", false, "Boda 27/04"));
-        clientes.add(new Cliente("Grupo Armonia", "Grupo Armonia", "1790000002001", "eventos@armonia.ec", "042333991", "Corporativo", false, "Cena 04/05"));
-        clientes.add(new Cliente("Colegio Horizonte", "Colegio Horizonte", "1790000003001", "secretaria@horizonte.edu", "0981004455", "Institucional", false, "Graduacion 02/05"));
+        anfitriones = controller.obtenerTodos();
 
         setLayout(new BorderLayout(18, 18));
         setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
@@ -98,7 +98,6 @@ public class cClientesTuristicos extends JPanel {
         addField(card, gbc, 5, "Telefono", txtTelefono);
         addField(card, gbc, 6, "Segmento", cbSegmento);
 
-        // Solo dos botones: Nuevo y Guardar
         gbc.gridy = 7;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
@@ -132,7 +131,6 @@ public class cClientesTuristicos extends JPanel {
         model = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // Solo las columnas de botones son editables (para poder hacer clic)
                 return column == 5 || column == 6;
             }
         };
@@ -141,15 +139,12 @@ public class cClientesTuristicos extends JPanel {
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         UiStyle.styleTable(table);
 
-        // Renderizador y editor para la columna VIP (índice 5)
         table.getColumnModel().getColumn(5).setCellRenderer(new VipButtonRenderer());
         table.getColumnModel().getColumn(5).setCellEditor(new VipButtonEditor());
 
-        // Renderizador y editor para la columna Eliminar (índice 6)
         table.getColumnModel().getColumn(6).setCellRenderer(new DeleteButtonRenderer());
         table.getColumnModel().getColumn(6).setCellEditor(new DeleteButtonEditor());
 
-        // Listener de selección: al seleccionar fila, cargar datos en formulario
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -157,9 +152,11 @@ public class cClientesTuristicos extends JPanel {
                 int viewRow = table.getSelectedRow();
                 if (viewRow >= 0) {
                     selectedIndex = viewRow;
-                    loadClienteFromRow(selectedIndex);
+                    selectedId = anfitriones.get(viewRow).getId();
+                    loadAnfitrionFromRow(selectedIndex);
                 } else {
                     selectedIndex = -1;
+                    selectedId = -1;
                 }
                 updateButtonStates();
             }
@@ -170,7 +167,7 @@ public class cClientesTuristicos extends JPanel {
         return card;
     }
 
-    // ================== CRUD ==================
+    // ================== CRUD (usa el controlador) ==================
 
     private void guardarCliente() {
         String nombre = txtNombre.getText().trim();
@@ -179,69 +176,80 @@ public class cClientesTuristicos extends JPanel {
             return;
         }
 
-        Cliente c = new Cliente(
-                nombre,
-                txtEmpresa.getText().trim(),
-                txtDocumento.getText().trim(),
-                txtCorreo.getText().trim(),
-                txtTelefono.getText().trim(),
-                (String) cbSegmento.getSelectedItem(),
-                false,
-                ""
-        );
+        Anfitrion a = new Anfitrion();
+        a.setNombre(nombre);
+        a.setEmpresa(txtEmpresa.getText().trim());
+        a.setDocumento(txtDocumento.getText().trim());
+        a.setCorreo(txtCorreo.getText().trim());
+        a.setTelefono(txtTelefono.getText().trim());
+        a.setSegmento((String) cbSegmento.getSelectedItem());
+        a.setVip(false);
+        a.setProximoEvento("");
 
-        if (selectedIndex >= 0 && selectedIndex < clientes.size()) {
-            // Actualizar cliente existente (conserva VIP y próximo evento)
-            Cliente existente = clientes.get(selectedIndex);
-            existente.setNombre(nombre);
-            existente.setEmpresa(c.getEmpresa());
-            existente.setDocumento(c.getDocumento());
-            existente.setCorreo(c.getCorreo());
-            existente.setTelefono(c.getTelefono());
-            existente.setSegmento(c.getSegmento());
-        } else {
-            // Insertar nuevo cliente
-            clientes.add(c);
+        boolean esNuevo = (selectedId == -1);
+        if (!esNuevo) {
+            a.setId(selectedId);
         }
 
+        boolean exito = controller.guardarAnfitrion(a, esNuevo);
+        if (!exito) {
+            JOptionPane.showMessageDialog(this, "No se pudo guardar el anfitrión. Revise la conexión.", "Error", JOptionPane.ERROR_MESSAGE);
+            anfitriones = controller.obtenerTodos();
+            refreshTable();
+            return;
+        }
+
+        anfitriones = controller.obtenerTodos();
         refreshTable();
         clearForm();
         selectedIndex = -1;
+        selectedId = -1;
         updateButtonStates();
     }
 
     private void toggleVip(int rowIndex) {
-        if (rowIndex >= 0 && rowIndex < clientes.size()) {
-            Cliente c = clientes.get(rowIndex);
-            c.setVip(!c.isVip());
-            refreshTable();
-        }
-    }
-
-    private void eliminarCliente(int rowIndex) {
-        if (rowIndex >= 0 && rowIndex < clientes.size()) {
-            int confirm = JOptionPane.showConfirmDialog(this,
-                    "¿Eliminar al anfitrión seleccionado?", "Confirmar eliminación",
-                    JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                clientes.remove(rowIndex);
+        if (rowIndex >= 0 && rowIndex < anfitriones.size()) {
+            Anfitrion a = anfitriones.get(rowIndex);
+            boolean nuevoEstado = !a.isVip();
+            if (controller.cambiarVip(a.getId(), nuevoEstado)) {
+                a.setVip(nuevoEstado);
                 refreshTable();
-                clearForm();
-                selectedIndex = -1;
-                updateButtonStates();
+            } else {
+                JOptionPane.showMessageDialog(this, "No se pudo cambiar el estado VIP.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-    private void loadClienteFromRow(int rowIndex) {
-        if (rowIndex >= 0 && rowIndex < clientes.size()) {
-            Cliente c = clientes.get(rowIndex);
-            txtNombre.setText(c.getNombre());
-            txtEmpresa.setText(c.getEmpresa());
-            txtDocumento.setText(c.getDocumento());
-            txtCorreo.setText(c.getCorreo());
-            txtTelefono.setText(c.getTelefono());
-            cbSegmento.setSelectedItem(c.getSegmento());
+    private void eliminarCliente(int rowIndex) {
+        if (rowIndex >= 0 && rowIndex < anfitriones.size()) {
+            int id = anfitriones.get(rowIndex).getId();
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "¿Eliminar al anfitrión seleccionado?", "Confirmar eliminación",
+                    JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (controller.eliminarAnfitrion(id)) {
+                    anfitriones = controller.obtenerTodos();
+                    refreshTable();
+                    clearForm();
+                    selectedIndex = -1;
+                    selectedId = -1;
+                    updateButtonStates();
+                } else {
+                    JOptionPane.showMessageDialog(this, "No se pudo eliminar el anfitrión.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
+
+    private void loadAnfitrionFromRow(int rowIndex) {
+        if (rowIndex >= 0 && rowIndex < anfitriones.size()) {
+            Anfitrion a = anfitriones.get(rowIndex);
+            txtNombre.setText(a.getNombre());
+            txtEmpresa.setText(a.getEmpresa());
+            txtDocumento.setText(a.getDocumento());
+            txtCorreo.setText(a.getCorreo());
+            txtTelefono.setText(a.getTelefono());
+            cbSegmento.setSelectedItem(a.getSegmento());
         }
     }
 
@@ -252,6 +260,7 @@ public class cClientesTuristicos extends JPanel {
         txtCorreo.setText("");
         txtTelefono.setText("");
         cbSegmento.setSelectedIndex(0);
+        selectedId = -1;
     }
 
     private void deselectTable() {
@@ -260,21 +269,20 @@ public class cClientesTuristicos extends JPanel {
 
     private void refreshTable() {
         model.setRowCount(0);
-        for (Cliente c : clientes) {
+        for (Anfitrion a : anfitriones) {
             model.addRow(new Object[]{
-                c.getNombre(),
-                c.getSegmento(),
-                c.getTelefono(),
-                c.getCorreo(),
-                c.getProximoEvento(),
-                c.isVip() ? "★" : "☆",   // solo para mostrar, el botón se renderiza con esto
+                a.getNombre(),
+                a.getSegmento(),
+                a.getTelefono(),
+                a.getCorreo(),
+                a.getProximoEvento(),
+                a.isVip() ? "★" : "☆",
                 "Eliminar"
             });
         }
     }
 
     private void updateButtonStates() {
-        // Aquí podrías cambiar el texto del botón Guardar según el modo
         if (selectedIndex >= 0) {
             btnGuardar.setText("Actualizar perfil");
         } else {
@@ -291,51 +299,8 @@ public class cClientesTuristicos extends JPanel {
         panel.add(component, gbc);
     }
 
-    // ================== Clase interna Cliente ==================
-    static class Cliente {
-        private String nombre;
-        private String empresa;
-        private String documento;
-        private String correo;
-        private String telefono;
-        private String segmento;
-        private boolean vip;
-        private String proximoEvento;
+    // ================== Renderers y Editors ==================
 
-        public Cliente(String nombre, String empresa, String documento, String correo,
-                       String telefono, String segmento, boolean vip, String proximoEvento) {
-            this.nombre = nombre;
-            this.empresa = empresa;
-            this.documento = documento;
-            this.correo = correo;
-            this.telefono = telefono;
-            this.segmento = segmento;
-            this.vip = vip;
-            this.proximoEvento = proximoEvento;
-        }
-
-        // Getters y setters
-        public String getNombre() { return nombre; }
-        public void setNombre(String nombre) { this.nombre = nombre; }
-        public String getEmpresa() { return empresa; }
-        public void setEmpresa(String empresa) { this.empresa = empresa; }
-        public String getDocumento() { return documento; }
-        public void setDocumento(String documento) { this.documento = documento; }
-        public String getCorreo() { return correo; }
-        public void setCorreo(String correo) { this.correo = correo; }
-        public String getTelefono() { return telefono; }
-        public void setTelefono(String telefono) { this.telefono = telefono; }
-        public String getSegmento() { return segmento; }
-        public void setSegmento(String segmento) { this.segmento = segmento; }
-        public boolean isVip() { return vip; }
-        public void setVip(boolean vip) { this.vip = vip; }
-        public String getProximoEvento() { return proximoEvento; }
-        public void setProximoEvento(String proximoEvento) { this.proximoEvento = proximoEvento; }
-    }
-
-    // ================== Renderers y Editors para botones en la tabla ==================
-
-    // --- Botón VIP (estrella) ---
     class VipButtonRenderer implements TableCellRenderer {
         private final JButton button = new JButton();
 
@@ -343,7 +308,7 @@ public class cClientesTuristicos extends JPanel {
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus,
                                                        int row, int column) {
-            boolean isVip = clientes.get(row).isVip();
+            boolean isVip = anfitriones.get(row).isVip();
             button.setText(isVip ? "★" : "☆");
             button.setForeground(isVip ? Color.ORANGE : Color.GRAY);
             button.setBorder(new EmptyBorder(5, 10, 5, 10));
@@ -372,7 +337,7 @@ public class cClientesTuristicos extends JPanel {
         public Component getTableCellEditorComponent(JTable table, Object value,
                                                      boolean isSelected, int row, int column) {
             this.row = row;
-            boolean isVip = clientes.get(row).isVip();
+            boolean isVip = anfitriones.get(row).isVip();
             button.setText(isVip ? "★" : "☆");
             button.setForeground(isVip ? Color.ORANGE : Color.GRAY);
             button.setBackground(table.getSelectionBackground());
@@ -381,11 +346,10 @@ public class cClientesTuristicos extends JPanel {
 
         @Override
         public Object getCellEditorValue() {
-            return clientes.get(row).isVip() ? "★" : "☆";
+            return anfitriones.get(row).isVip() ? "★" : "☆";
         }
     }
 
-    // --- Botón Eliminar ---
     class DeleteButtonRenderer implements TableCellRenderer {
         private final JButton button = new JButton("🗑 Eliminar");
 

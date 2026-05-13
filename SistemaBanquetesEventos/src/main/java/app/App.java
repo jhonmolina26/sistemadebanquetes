@@ -1,8 +1,8 @@
 package app;
 
 import javax.swing.SwingUtilities;
-import ui.MenuPrincipal;
-import ui.UiStyle;
+import Vista.MenuPrincipal;
+import Vista.UiStyle;
 
 public class App {
     public static void main(String[] args) {

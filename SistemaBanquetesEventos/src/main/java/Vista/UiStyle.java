@@ -1,4 +1,4 @@
-package ui;
+package Vista;
 
 import java.awt.Color;
 import java.awt.Font;
