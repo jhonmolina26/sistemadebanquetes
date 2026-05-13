@@ -15,7 +15,7 @@ import ui.components.RoundedButton;
 import controller.AnfitrionController;
 import models.Anfitrion;
 
-public class cClientesTuristicos extends JPanel {
+public class AnfitrionesPanel extends JPanel {
 
     private PlaceholderTextField txtNombre;
     private PlaceholderTextField txtEmpresa;
@@ -39,7 +39,7 @@ public class cClientesTuristicos extends JPanel {
 
     private final String[] columnNames = {"Anfitrion", "Segmento", "Telefono", "Correo", "Próximo evento", "★ VIP", "Acción"};
 
-    public cClientesTuristicos() {
+    public AnfitrionesPanel() {
         anfitriones = controller.obtenerTodos();
 
         setLayout(new BorderLayout(18, 18));

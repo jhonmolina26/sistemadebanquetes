@@ -15,9 +15,9 @@ import javax.swing.table.DefaultTableModel;
 import ui.components.PlaceholderTextField;
 import ui.components.RoundedButton;
 
-public class Itinerarios extends JPanel {
+public class SalonesPanel extends JPanel {
 
-    public Itinerarios() {
+    public SalonesPanel() {
         setLayout(new BorderLayout(18, 18));
         setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
         setBackground(UiStyle.SOFT);

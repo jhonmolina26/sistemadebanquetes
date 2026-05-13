@@ -10,7 +10,7 @@ import ui.components.RoundedButton;
 import controller.EventoController;
 import models.Evento;
 
-public class Reserva extends JPanel {
+public class ContratacionesPanel extends JPanel {
 
     private PlaceholderTextField txtCodigo;
     private PlaceholderTextField txtFecha;
@@ -42,7 +42,7 @@ public class Reserva extends JPanel {
 
     private final String[] columnNames = {"Código", "Evento", "Fecha", "Salón", "Invitados", "Estado"};
 
-    public Reserva() {
+    public ContratacionesPanel() {
         eventos = controller.obtenerTodos();
 
         setLayout(new BorderLayout(18, 18));

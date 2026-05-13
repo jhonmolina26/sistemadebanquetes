@@ -12,9 +12,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import java.awt.*;
 
-public class MenuPrincipal extends JFrame {
+public class VentanaPrincipal extends JFrame {
 
-    public MenuPrincipal() {
+    public VentanaPrincipal() {
         setTitle("Sistema de Gestion de Banquetes y Eventos");
         setSize(1320, 780);
         setLocationRelativeTo(null);
@@ -27,16 +27,16 @@ public class MenuPrincipal extends JFrame {
         JTabbedPane tabs = new JTabbedPane();
         tabs.setBackground(Color.WHITE);
 
-        Reserva reservaPanel = new Reserva();
-        Itinerarios itinerariosPanel = new Itinerarios();
-        cClientesTuristicos clientesPanel = new cClientesTuristicos();
-        LugaresTuristicos lugaresPanel = new LugaresTuristicos();
-        Pagos pagosPanel = new Pagos();
+        ContratacionesPanel contratacionesPanel = new ContratacionesPanel();
+        SalonesPanel salonesPanel = new SalonesPanel();
+        AnfitrionesPanel anfitrionesPanel = new AnfitrionesPanel();
+        MenusPanel menusPanel = new MenusPanel();
+        PagosPanel pagosPanel = new PagosPanel();
 
-        tabs.addTab("Contrataciones", reservaPanel);
-        tabs.addTab("Salones", itinerariosPanel);
-        tabs.addTab("Anfitriones", clientesPanel);
-        tabs.addTab("Menus", lugaresPanel);
+        tabs.addTab("Contrataciones", contratacionesPanel);
+        tabs.addTab("Salones", salonesPanel);
+        tabs.addTab("Anfitriones", anfitrionesPanel);
+        tabs.addTab("Menus", menusPanel);
         tabs.addTab("Pagos", pagosPanel);
 
         JPanel content = new JPanel(new BorderLayout());

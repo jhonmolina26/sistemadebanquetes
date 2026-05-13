@@ -19,7 +19,7 @@ import javax.swing.table.DefaultTableModel;
 import ui.components.PlaceholderTextField;
 import ui.components.RoundedButton;
 
-public class Pagos extends JPanel {
+public class PagosPanel extends JPanel {
     JComboBox<String> cbProvincia;
     JComboBox<String> cbLugar;
     private PlaceholderTextField txtAnticipo;
@@ -28,7 +28,7 @@ public class Pagos extends JPanel {
     private PlaceholderTextField txtMetodo;
     private final Map<String, List<LugarInfo>> data = new HashMap<>();
 
-    public Pagos() {
+    public PagosPanel() {
         setLayout(new BorderLayout(18, 18));
         setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
         setBackground(UiStyle.SOFT);
