@@ -80,15 +80,25 @@ public class AnfitrionesPanel extends JPanel {
 
         add(panelHeader, BorderLayout.NORTH);
 
-        JPanel panelCentral = new JPanel(new GridLayout(1, 2, 15, 0));
+        // =========================
+        // PANEL CENTRAL MEJORADO
+        // =========================
 
-        panelCentral.setOpaque(false);
+        JSplitPane splitPane = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
+                crearPanelFormulario(),
+                crearPanelTabla()
+        );
 
-        panelCentral.add(crearPanelFormulario());
+        splitPane.setDividerLocation(500);
 
-        panelCentral.add(crearPanelTabla());
+        splitPane.setResizeWeight(0.35);
 
-        add(panelCentral, BorderLayout.CENTER);
+        splitPane.setBorder(null);
+
+        splitPane.setOpaque(false);
+
+        add(splitPane, BorderLayout.CENTER);
     }
 
     private JPanel crearPanelFormulario() {
@@ -145,28 +155,6 @@ public class AnfitrionesPanel extends JPanel {
 
         chkVip = new JCheckBox("VIP");
 
-        chkVip.addActionListener(e -> {
-
-            if (chkVip.isSelected()) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Cliente marcado como VIP ★",
-                        "VIP activado",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
-
-            } else {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Cliente removido de VIP",
-                        "VIP desactivado",
-                        JOptionPane.WARNING_MESSAGE
-                );
-            }
-        });
-
         Font campoFont = new Font("Segoe UI", Font.PLAIN, 12);
 
         txtNombre.setFont(campoFont);
@@ -182,88 +170,72 @@ public class AnfitrionesPanel extends JPanel {
 
         gbc.gridx = 0;
         gbc.gridy = fila;
-
         panel.add(new JLabel("Nombre"), gbc);
 
         gbc.gridx = 1;
-
         panel.add(txtNombre, gbc);
 
         fila++;
 
         gbc.gridx = 0;
         gbc.gridy = fila;
-
         panel.add(new JLabel("Empresa / familia"), gbc);
 
         gbc.gridx = 1;
-
         panel.add(txtEmpresa, gbc);
 
         fila++;
 
         gbc.gridx = 0;
         gbc.gridy = fila;
-
         panel.add(new JLabel("Documento"), gbc);
 
         gbc.gridx = 1;
-
         panel.add(txtDocumento, gbc);
 
         fila++;
 
         gbc.gridx = 0;
         gbc.gridy = fila;
-
         panel.add(new JLabel("Correo"), gbc);
 
         gbc.gridx = 1;
-
         panel.add(txtCorreo, gbc);
 
         fila++;
 
         gbc.gridx = 0;
         gbc.gridy = fila;
-
         panel.add(new JLabel("Teléfono"), gbc);
 
         gbc.gridx = 1;
-
         panel.add(txtTelefono, gbc);
 
         fila++;
 
         gbc.gridx = 0;
         gbc.gridy = fila;
-
         panel.add(new JLabel("Segmento"), gbc);
 
         gbc.gridx = 1;
-
         panel.add(cmbSegmento, gbc);
 
         fila++;
 
         gbc.gridx = 0;
         gbc.gridy = fila;
-
         panel.add(new JLabel("Próximo evento"), gbc);
 
         gbc.gridx = 1;
-
         panel.add(txtProximoEvento, gbc);
 
         fila++;
 
         gbc.gridx = 0;
         gbc.gridy = fila;
-
         panel.add(new JLabel("VIP"), gbc);
 
         gbc.gridx = 1;
-
         panel.add(chkVip, gbc);
 
         fila++;
@@ -345,25 +317,85 @@ public class AnfitrionesPanel extends JPanel {
 
         tablaAnfitriones = new JTable(modeloTabla);
 
+        // =========================
+        // ESTILOS DE TABLA
+        // =========================
+
         tablaAnfitriones.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 
-        tablaAnfitriones.setRowHeight(30);
+        tablaAnfitriones.setRowHeight(35);
 
         tablaAnfitriones.setSelectionBackground(new Color(0, 123, 255));
 
         tablaAnfitriones.setSelectionForeground(Color.WHITE);
 
-        tablaAnfitriones.setGridColor(new Color(222, 226, 230));
+        tablaAnfitriones.setGridColor(new Color(230, 230, 230));
+
+        tablaAnfitriones.setIntercellSpacing(new Dimension(10, 8));
+
+        tablaAnfitriones.setShowGrid(false);
+
+        tablaAnfitriones.setFillsViewportHeight(true);
+
+        tablaAnfitriones.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        // =========================
+        // HEADER
+        // =========================
 
         tablaAnfitriones.getTableHeader().setFont(
                 new Font("Segoe UI", Font.BOLD, 12)
         );
+
+        tablaAnfitriones.getTableHeader().setBackground(
+                new Color(248, 249, 250)
+        );
+
+        tablaAnfitriones.getTableHeader().setForeground(
+                new Color(33, 37, 41)
+        );
+
+        tablaAnfitriones.getTableHeader().setReorderingAllowed(false);
+
+        tablaAnfitriones.getTableHeader().setPreferredSize(
+                new Dimension(0, 35)
+        );
+
+        // =========================
+        // ANCHOS DE COLUMNAS
+        // =========================
+
+        tablaAnfitriones.getColumnModel().getColumn(0).setPreferredWidth(160);
+
+        tablaAnfitriones.getColumnModel().getColumn(1).setPreferredWidth(160);
+
+        tablaAnfitriones.getColumnModel().getColumn(2).setPreferredWidth(130);
+
+        tablaAnfitriones.getColumnModel().getColumn(3).setPreferredWidth(130);
+
+        tablaAnfitriones.getColumnModel().getColumn(4).setPreferredWidth(130);
+
+        tablaAnfitriones.getColumnModel().getColumn(5).setPreferredWidth(240);
+
+        tablaAnfitriones.getColumnModel().getColumn(6).setPreferredWidth(170);
+
+        tablaAnfitriones.getColumnModel().getColumn(7).setPreferredWidth(90);
+
+        tablaAnfitriones.getColumnModel().getColumn(8).setPreferredWidth(120);
+
+        // =========================
+        // BOTÓN ELIMINAR
+        // =========================
 
         tablaAnfitriones.getColumnModel().getColumn(8)
                 .setCellRenderer(new ButtonRenderer());
 
         tablaAnfitriones.getColumnModel().getColumn(8)
                 .setCellEditor(new ButtonEditor(new JCheckBox()));
+
+        // =========================
+        // EVENTO SELECCIÓN
+        // =========================
 
         tablaAnfitriones.getSelectionModel().addListSelectionListener(e -> {
 
@@ -378,9 +410,21 @@ public class AnfitrionesPanel extends JPanel {
             }
         });
 
-        JScrollPane scroll = new JScrollPane(tablaAnfitriones);
+        // =========================
+        // SCROLL
+        // =========================
 
-        scroll.setBorder(BorderFactory.createEmptyBorder());
+        JScrollPane scroll = new JScrollPane(
+                tablaAnfitriones,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
+
+        scroll.getViewport().setBackground(Color.WHITE);
+
+        scroll.setBorder(BorderFactory.createLineBorder(
+                new Color(220, 220, 220)
+        ));
 
         panel.add(scroll, BorderLayout.CENTER);
 
@@ -396,15 +440,15 @@ public class AnfitrionesPanel extends JPanel {
         for (Anfitrion a : lista) {
 
             Object[] fila = {
-                a.getNombre(),
-                a.getEmpresa(),
-                a.getDocumento(),
-                a.getSegmento(),
-                a.getTelefono(),
-                a.getCorreo(),
-                a.getProximoEvento(),
-                a.isVip() ? "★ VIP" : "Normal",
-                "Eliminar"
+                    a.getNombre(),
+                    a.getEmpresa(),
+                    a.getDocumento(),
+                    a.getSegmento(),
+                    a.getTelefono(),
+                    a.getCorreo(),
+                    a.getProximoEvento(),
+                    a.isVip() ? "★ VIP" : "Normal",
+                    "Eliminar"
             };
 
             modeloTabla.addRow(fila);
@@ -517,13 +561,11 @@ public class AnfitrionesPanel extends JPanel {
 
         if (exito) {
 
-            String mensaje = esNuevo
-                    ? "Perfil creado correctamente."
-                    : "Perfil actualizado correctamente.";
-
             JOptionPane.showMessageDialog(
                     this,
-                    mensaje,
+                    esNuevo
+                            ? "Perfil creado correctamente."
+                            : "Perfil actualizado correctamente.",
                     "Éxito",
                     JOptionPane.INFORMATION_MESSAGE
             );
@@ -609,6 +651,10 @@ public class AnfitrionesPanel extends JPanel {
         public ButtonRenderer() {
 
             setOpaque(true);
+
+            setFocusPainted(false);
+
+            setBorder(new EmptyBorder(5, 10, 5, 10));
         }
 
         @Override
@@ -623,15 +669,9 @@ public class AnfitrionesPanel extends JPanel {
 
             setText("Eliminar");
 
-            setForeground(Color.RED);
+            setForeground(Color.WHITE);
 
-            setBackground(
-                    isSelected
-                    ? table.getSelectionBackground()
-                    : Color.WHITE
-            );
-
-            setBorder(new EmptyBorder(5, 10, 5, 10));
+            setBackground(new Color(220, 53, 69));
 
             return this;
         }
@@ -652,6 +692,12 @@ public class AnfitrionesPanel extends JPanel {
             button = new JButton();
 
             button.setOpaque(true);
+
+            button.setForeground(Color.WHITE);
+
+            button.setBackground(new Color(220, 53, 69));
+
+            button.setFocusPainted(false);
 
             button.addActionListener(e -> {
 
@@ -678,10 +724,6 @@ public class AnfitrionesPanel extends JPanel {
             label = "Eliminar";
 
             button.setText(label);
-
-            button.setForeground(Color.RED);
-
-            button.setBackground(table.getSelectionBackground());
 
             return button;
         }
