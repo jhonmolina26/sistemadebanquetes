@@ -1,6 +1,7 @@
 package controller;
 
 import dao.EventoDAO;
+import java.sql.Date;
 import models.Evento;
 import java.util.List;
 import models.Anfitrion;
@@ -33,5 +34,32 @@ public class EventoController {
     
     public List<Anfitrion> obtenerAnfitriones() {
         return anfitrionController.obtenerTodos();
+    }
+
+    // Método para actualizar solo los campos permitidos
+    public boolean actualizarCamposPermitidos(Evento ev) {
+        // Primero verificamos que el evento no esté bloqueado
+        List<Evento> todos = dao.obtenerTodos();
+        Evento existente = null;
+        for (Evento e : todos) {
+            if (e.getId() == ev.getId()) {
+                existente = e;
+                break;
+            }
+        }
+
+        if (existente != null && "Bloqueado".equals(existente.getEstado())) {
+            return false; // No se puede modificar un evento bloqueado
+        }
+
+        return dao.actualizar(ev);
+    }
+    
+    public boolean verificarDisponibilidadSalon(int salonId, Date fecha, String horario, int eventoIdExcluir) {
+        return dao.verificarDisponibilidadSalon(salonId, fecha, horario, eventoIdExcluir);
+    }
+    
+    public List<Evento> buscar(String tipoEvento, String fecha, String estado) {
+        return dao.buscar(tipoEvento, fecha, estado);
     }
 }
