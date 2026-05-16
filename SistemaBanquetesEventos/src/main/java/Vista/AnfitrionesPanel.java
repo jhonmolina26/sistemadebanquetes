@@ -1,19 +1,16 @@
 package Vista;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
+import dao.AnfitrionDAO;
+import models.Anfitrion;
 import ui.components.PlaceholderTextField;
 import ui.components.RoundedButton;
-import controller.AnfitrionController;
-import models.Anfitrion;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+import java.util.List;
 
 public class AnfitrionesPanel extends JPanel {
 
@@ -22,376 +19,719 @@ public class AnfitrionesPanel extends JPanel {
     private PlaceholderTextField txtDocumento;
     private PlaceholderTextField txtCorreo;
     private PlaceholderTextField txtTelefono;
-    private JComboBox<String> cbSegmento;
+    private JComboBox<String> cmbSegmento;
+    private JCheckBox chkVip;
+    private PlaceholderTextField txtProximoEvento;
 
-    private JTable table;
-    private DefaultTableModel model;
-
-    private RoundedButton btnGuardar;
     private RoundedButton btnNuevo;
+    private RoundedButton btnGuardar;
 
-    private List<Anfitrion> anfitriones;
-    private int selectedIndex = -1;
+    private JTable tablaAnfitriones;
+    private DefaultTableModel modeloTabla;
 
-    // --- USO DEL CONTROLADOR EN VEZ DEL DAO ---
-    private AnfitrionController controller = new AnfitrionController();
-    private int selectedId = -1;
+    private AnfitrionDAO anfitrionDAO;
 
-    private final String[] columnNames = {"Anfitrion", "Segmento", "Telefono", "Correo", "Próximo evento", "★ VIP", "Acción"};
+    private int idSeleccionado = -1;
 
     public AnfitrionesPanel() {
-        anfitriones = controller.obtenerTodos();
 
-        setLayout(new BorderLayout(18, 18));
-        setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
-        setBackground(UiStyle.SOFT);
+        anfitrionDAO = new AnfitrionDAO();
 
-        add(buildHeader(), BorderLayout.NORTH);
-        add(buildContent(), BorderLayout.CENTER);
+        initComponents();
 
-        refreshTable();
-        updateButtonStates();
-        clearForm();
+        cargarTabla();
     }
 
-    private JPanel buildHeader() {
-        JPanel header = UiStyle.createCard();
-        header.setLayout(new BorderLayout());
-        header.add(UiStyle.title("Anfitriones"), BorderLayout.NORTH);
-        header.add(UiStyle.subtitle("Datos del cliente u organizador con enfoque comercial y operativo."), BorderLayout.CENTER);
-        return header;
+    private void initComponents() {
+
+        setLayout(new BorderLayout(10, 10));
+
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        setBackground(new Color(245, 247, 250));
+
+        JLabel lblTitulo = new JLabel("Anfitriones");
+
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+
+        lblTitulo.setForeground(new Color(33, 37, 41));
+
+        JLabel lblSubtitulo = new JLabel(
+                "Datos del cliente u organizador con enfoque comercial y operativo."
+        );
+
+        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+
+        lblSubtitulo.setForeground(new Color(108, 117, 125));
+
+        JPanel panelTitulo = new JPanel(new GridLayout(2, 1, 0, 2));
+
+        panelTitulo.setOpaque(false);
+
+        panelTitulo.add(lblTitulo);
+
+        panelTitulo.add(lblSubtitulo);
+
+        JPanel panelHeader = new JPanel(new BorderLayout());
+
+        panelHeader.setOpaque(false);
+
+        panelHeader.add(panelTitulo, BorderLayout.WEST);
+
+        add(panelHeader, BorderLayout.NORTH);
+
+        // =========================
+        // PANEL CENTRAL MEJORADO
+        // =========================
+
+        JSplitPane splitPane = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
+                crearPanelFormulario(),
+                crearPanelTabla()
+        );
+
+        splitPane.setDividerLocation(500);
+
+        splitPane.setResizeWeight(0.35);
+
+        splitPane.setBorder(null);
+
+        splitPane.setOpaque(false);
+
+        add(splitPane, BorderLayout.CENTER);
     }
 
-    private JPanel buildContent() {
-        JPanel content = new JPanel(new BorderLayout(18, 18));
-        content.setOpaque(false);
-        content.add(buildProfileCard(), BorderLayout.WEST);
-        content.add(buildTableCard(), BorderLayout.CENTER);
-        return content;
-    }
+    private JPanel crearPanelFormulario() {
 
-    private JPanel buildProfileCard() {
-        JPanel card = UiStyle.createCard();
-        card.setLayout(new GridBagLayout());
-        card.setPreferredSize(new Dimension(420, 0));
+        JPanel panel = new JPanel(new GridBagLayout());
+
+        panel.setBackground(Color.WHITE);
+
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(222, 226, 230)),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
+
+        gbc.insets = new Insets(8, 5, 8, 5);
+
+        gbc.anchor = GridBagConstraints.WEST;
+
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
+
+        JLabel lblTituloForm = new JLabel("Perfil del anfitrión");
+
+        lblTituloForm.setFont(new Font("Segoe UI", Font.BOLD, 16));
+
+        lblTituloForm.setForeground(new Color(33, 37, 41));
+
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
-        card.add(UiStyle.sectionTitle("Perfil del anfitrión"), gbc);
 
-        txtNombre = new PlaceholderTextField("Nombre del organizador", 18);
-        txtEmpresa = new PlaceholderTextField("Empresa o familia", 18);
-        txtDocumento = new PlaceholderTextField("Cedula o RUC", 18);
-        txtCorreo = new PlaceholderTextField("correo@evento.com", 18);
-        txtTelefono = new PlaceholderTextField("0990000000", 18);
-        cbSegmento = new JComboBox<>(new String[]{"Corporativo", "Social", "Institucional", "Agencia aliada"});
+        panel.add(lblTituloForm, gbc);
 
-        addField(card, gbc, 1, "Nombre", txtNombre);
-        addField(card, gbc, 2, "Empresa / familia", txtEmpresa);
-        addField(card, gbc, 3, "Documento", txtDocumento);
-        addField(card, gbc, 4, "Correo", txtCorreo);
-        addField(card, gbc, 5, "Telefono", txtTelefono);
-        addField(card, gbc, 6, "Segmento", cbSegmento);
+        gbc.gridwidth = 1;
 
-        gbc.gridy = 7;
-        gbc.gridx = 0;
-        gbc.gridwidth = 2;
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        actions.setOpaque(false);
+        txtNombre = new PlaceholderTextField("Nombre del organizador", 20);
 
-        btnNuevo = new RoundedButton("Nuevo");
-        btnGuardar = new RoundedButton("Guardar perfil");
+        txtEmpresa = new PlaceholderTextField("Empresa o familia", 20);
 
-        actions.add(btnNuevo);
-        actions.add(btnGuardar);
-        card.add(actions, gbc);
+        txtDocumento = new PlaceholderTextField("Cédula o RUC", 20);
 
-        btnNuevo.addActionListener(e -> {
-            deselectTable();
-            clearForm();
-            selectedIndex = -1;
-            updateButtonStates();
+        txtCorreo = new PlaceholderTextField("correo@evento.com", 20);
+
+        txtTelefono = new PlaceholderTextField("0990000000", 20);
+
+        txtProximoEvento = new PlaceholderTextField("Próximo evento", 20);
+
+        cmbSegmento = new JComboBox<>(new String[]{
+            "Corporativo",
+            "Social",
+            "Institucional",
+            "Agencia aliada"
         });
 
-        btnGuardar.addActionListener(e -> guardarCliente());
+        chkVip = new JCheckBox("VIP");
 
-        return card;
+        Font campoFont = new Font("Segoe UI", Font.PLAIN, 12);
+
+        txtNombre.setFont(campoFont);
+        txtEmpresa.setFont(campoFont);
+        txtDocumento.setFont(campoFont);
+        txtCorreo.setFont(campoFont);
+        txtTelefono.setFont(campoFont);
+        txtProximoEvento.setFont(campoFont);
+
+        cmbSegmento.setFont(campoFont);
+
+        int fila = 1;
+
+        gbc.gridx = 0;
+        gbc.gridy = fila;
+        panel.add(new JLabel("Nombre"), gbc);
+
+        gbc.gridx = 1;
+        panel.add(txtNombre, gbc);
+
+        fila++;
+
+        gbc.gridx = 0;
+        gbc.gridy = fila;
+        panel.add(new JLabel("Empresa / familia"), gbc);
+
+        gbc.gridx = 1;
+        panel.add(txtEmpresa, gbc);
+
+        fila++;
+
+        gbc.gridx = 0;
+        gbc.gridy = fila;
+        panel.add(new JLabel("Documento"), gbc);
+
+        gbc.gridx = 1;
+        panel.add(txtDocumento, gbc);
+
+        fila++;
+
+        gbc.gridx = 0;
+        gbc.gridy = fila;
+        panel.add(new JLabel("Correo"), gbc);
+
+        gbc.gridx = 1;
+        panel.add(txtCorreo, gbc);
+
+        fila++;
+
+        gbc.gridx = 0;
+        gbc.gridy = fila;
+        panel.add(new JLabel("Teléfono"), gbc);
+
+        gbc.gridx = 1;
+        panel.add(txtTelefono, gbc);
+
+        fila++;
+
+        gbc.gridx = 0;
+        gbc.gridy = fila;
+        panel.add(new JLabel("Segmento"), gbc);
+
+        gbc.gridx = 1;
+        panel.add(cmbSegmento, gbc);
+
+        fila++;
+
+        gbc.gridx = 0;
+        gbc.gridy = fila;
+        panel.add(new JLabel("Próximo evento"), gbc);
+
+        gbc.gridx = 1;
+        panel.add(txtProximoEvento, gbc);
+
+        fila++;
+
+        gbc.gridx = 0;
+        gbc.gridy = fila;
+        panel.add(new JLabel("VIP"), gbc);
+
+        gbc.gridx = 1;
+        panel.add(chkVip, gbc);
+
+        fila++;
+
+        gbc.gridy = fila;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+
+        JPanel panelBotones = new JPanel(new GridLayout(1, 2, 10, 0));
+
+        panelBotones.setOpaque(false);
+
+        btnNuevo = new RoundedButton("Nuevo");
+
+        btnGuardar = new RoundedButton("Guardar perfil");
+
+        btnNuevo.addActionListener(e -> {
+
+            limpiarFormulario();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Formulario listo para un nuevo registro.",
+                    "Nuevo perfil",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        });
+
+        btnGuardar.addActionListener(e -> guardarAnfitrion());
+
+        panelBotones.add(btnNuevo);
+
+        panelBotones.add(btnGuardar);
+
+        panel.add(panelBotones, gbc);
+
+        return panel;
     }
 
-    private JPanel buildTableCard() {
-        JPanel card = UiStyle.createCard();
-        card.setLayout(new BorderLayout(12, 12));
-        card.add(UiStyle.sectionTitle("Cartera de clientes"), BorderLayout.NORTH);
+    private JPanel crearPanelTabla() {
 
-        model = new DefaultTableModel(columnNames, 0) {
+        JPanel panel = new JPanel(new BorderLayout(0, 10));
+
+        panel.setBackground(Color.WHITE);
+
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(222, 226, 230)),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+
+        JLabel lblTituloTabla = new JLabel("Cartera de clientes");
+
+        lblTituloTabla.setFont(new Font("Segoe UI", Font.BOLD, 16));
+
+        lblTituloTabla.setForeground(new Color(33, 37, 41));
+
+        panel.add(lblTituloTabla, BorderLayout.NORTH);
+
+        String[] columnas = {
+            "Anfitrión",
+            "Empresa",
+            "Documento",
+            "Segmento",
+            "Teléfono",
+            "Correo",
+            "Próximo evento",
+            "VIP",
+            "Acción"
+        };
+
+        modeloTabla = new DefaultTableModel(columnas, 0) {
+
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 5 || column == 6;
+
+                return column == 8;
             }
         };
 
-        table = new JTable(model);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        UiStyle.styleTable(table);
+        tablaAnfitriones = new JTable(modeloTabla);
 
-        table.getColumnModel().getColumn(5).setCellRenderer(new VipButtonRenderer());
-        table.getColumnModel().getColumn(5).setCellEditor(new VipButtonEditor());
+        // =========================
+        // ESTILOS DE TABLA
+        // =========================
 
-        table.getColumnModel().getColumn(6).setCellRenderer(new DeleteButtonRenderer());
-        table.getColumnModel().getColumn(6).setCellEditor(new DeleteButtonEditor());
+        tablaAnfitriones.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 
-        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting()) return;
-                int viewRow = table.getSelectedRow();
-                if (viewRow >= 0) {
-                    selectedIndex = viewRow;
-                    selectedId = anfitriones.get(viewRow).getId();
-                    loadAnfitrionFromRow(selectedIndex);
-                } else {
-                    selectedIndex = -1;
-                    selectedId = -1;
+        tablaAnfitriones.setRowHeight(35);
+
+        tablaAnfitriones.setSelectionBackground(new Color(0, 123, 255));
+
+        tablaAnfitriones.setSelectionForeground(Color.WHITE);
+
+        tablaAnfitriones.setGridColor(new Color(230, 230, 230));
+
+        tablaAnfitriones.setIntercellSpacing(new Dimension(10, 8));
+
+        tablaAnfitriones.setShowGrid(false);
+
+        tablaAnfitriones.setFillsViewportHeight(true);
+
+        tablaAnfitriones.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        // =========================
+        // HEADER
+        // =========================
+
+        tablaAnfitriones.getTableHeader().setFont(
+                new Font("Segoe UI", Font.BOLD, 12)
+        );
+
+        tablaAnfitriones.getTableHeader().setBackground(
+                new Color(248, 249, 250)
+        );
+
+        tablaAnfitriones.getTableHeader().setForeground(
+                new Color(33, 37, 41)
+        );
+
+        tablaAnfitriones.getTableHeader().setReorderingAllowed(false);
+
+        tablaAnfitriones.getTableHeader().setPreferredSize(
+                new Dimension(0, 35)
+        );
+
+        // =========================
+        // ANCHOS DE COLUMNAS
+        // =========================
+
+        tablaAnfitriones.getColumnModel().getColumn(0).setPreferredWidth(160);
+
+        tablaAnfitriones.getColumnModel().getColumn(1).setPreferredWidth(160);
+
+        tablaAnfitriones.getColumnModel().getColumn(2).setPreferredWidth(130);
+
+        tablaAnfitriones.getColumnModel().getColumn(3).setPreferredWidth(130);
+
+        tablaAnfitriones.getColumnModel().getColumn(4).setPreferredWidth(130);
+
+        tablaAnfitriones.getColumnModel().getColumn(5).setPreferredWidth(240);
+
+        tablaAnfitriones.getColumnModel().getColumn(6).setPreferredWidth(170);
+
+        tablaAnfitriones.getColumnModel().getColumn(7).setPreferredWidth(90);
+
+        tablaAnfitriones.getColumnModel().getColumn(8).setPreferredWidth(120);
+
+        // =========================
+        // BOTÓN ELIMINAR
+        // =========================
+
+        tablaAnfitriones.getColumnModel().getColumn(8)
+                .setCellRenderer(new ButtonRenderer());
+
+        tablaAnfitriones.getColumnModel().getColumn(8)
+                .setCellEditor(new ButtonEditor(new JCheckBox()));
+
+        // =========================
+        // EVENTO SELECCIÓN
+        // =========================
+
+        tablaAnfitriones.getSelectionModel().addListSelectionListener(e -> {
+
+            if (!e.getValueIsAdjusting()) {
+
+                int fila = tablaAnfitriones.getSelectedRow();
+
+                if (fila >= 0) {
+
+                    cargarAnfitrionEnFormulario(fila);
                 }
-                updateButtonStates();
             }
         });
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        card.add(scrollPane, BorderLayout.CENTER);
-        return card;
+        // =========================
+        // SCROLL
+        // =========================
+
+        JScrollPane scroll = new JScrollPane(
+                tablaAnfitriones,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
+
+        scroll.getViewport().setBackground(Color.WHITE);
+
+        scroll.setBorder(BorderFactory.createLineBorder(
+                new Color(220, 220, 220)
+        ));
+
+        panel.add(scroll, BorderLayout.CENTER);
+
+        return panel;
     }
 
-    // ================== CRUD (usa el controlador) ==================
+    private void cargarTabla() {
 
-    private void guardarCliente() {
-        String nombre = txtNombre.getText().trim();
-        if (nombre.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El nombre del anfitrión es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+        modeloTabla.setRowCount(0);
+
+        List<Anfitrion> lista = anfitrionDAO.obtenerTodos();
+
+        for (Anfitrion a : lista) {
+
+            Object[] fila = {
+                    a.getNombre(),
+                    a.getEmpresa(),
+                    a.getDocumento(),
+                    a.getSegmento(),
+                    a.getTelefono(),
+                    a.getCorreo(),
+                    a.getProximoEvento(),
+                    a.isVip() ? "★ VIP" : "Normal",
+                    "Eliminar"
+            };
+
+            modeloTabla.addRow(fila);
+        }
+    }
+
+    private void cargarAnfitrionEnFormulario(int fila) {
+
+        List<Anfitrion> lista = anfitrionDAO.obtenerTodos();
+
+        if (fila >= 0 && fila < lista.size()) {
+
+            Anfitrion a = lista.get(fila);
+
+            idSeleccionado = a.getId();
+
+            txtNombre.setText(a.getNombre());
+
+            txtEmpresa.setText(a.getEmpresa());
+
+            txtDocumento.setText(a.getDocumento());
+
+            txtCorreo.setText(a.getCorreo());
+
+            txtTelefono.setText(a.getTelefono());
+
+            cmbSegmento.setSelectedItem(a.getSegmento());
+
+            chkVip.setSelected(a.isVip());
+
+            txtProximoEvento.setText(a.getProximoEvento());
+
+            btnGuardar.setText("Actualizar perfil");
+        }
+    }
+
+    private void guardarAnfitrion() {
+
+        if (txtNombre.getText().trim().isEmpty()) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "El nombre es obligatorio.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        if (!txtCorreo.getText().contains("@")) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Ingrese un correo válido.",
+                    "Correo inválido",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        if (txtTelefono.getText().trim().length() < 10) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Ingrese un número de teléfono válido.",
+                    "Teléfono inválido",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
             return;
         }
 
         Anfitrion a = new Anfitrion();
-        a.setNombre(nombre);
+
+        if (idSeleccionado != -1) {
+
+            a.setId(idSeleccionado);
+        }
+
+        a.setNombre(txtNombre.getText().trim());
+
         a.setEmpresa(txtEmpresa.getText().trim());
+
         a.setDocumento(txtDocumento.getText().trim());
+
         a.setCorreo(txtCorreo.getText().trim());
+
         a.setTelefono(txtTelefono.getText().trim());
-        a.setSegmento((String) cbSegmento.getSelectedItem());
-        a.setVip(false);
-        a.setProximoEvento("");
 
-        boolean esNuevo = (selectedId == -1);
-        if (!esNuevo) {
-            a.setId(selectedId);
-        }
+        a.setSegmento(cmbSegmento.getSelectedItem().toString());
 
-        boolean exito = controller.guardarAnfitrion(a, esNuevo);
-        if (!exito) {
-            JOptionPane.showMessageDialog(this, "No se pudo guardar el anfitrión. Revise la conexión.", "Error", JOptionPane.ERROR_MESSAGE);
-            anfitriones = controller.obtenerTodos();
-            refreshTable();
-            return;
-        }
+        a.setVip(chkVip.isSelected());
 
-        anfitriones = controller.obtenerTodos();
-        refreshTable();
-        clearForm();
-        selectedIndex = -1;
-        selectedId = -1;
-        updateButtonStates();
-    }
+        a.setProximoEvento(txtProximoEvento.getText().trim());
 
-    private void toggleVip(int rowIndex) {
-        if (rowIndex >= 0 && rowIndex < anfitriones.size()) {
-            Anfitrion a = anfitriones.get(rowIndex);
-            boolean nuevoEstado = !a.isVip();
-            if (controller.cambiarVip(a.getId(), nuevoEstado)) {
-                a.setVip(nuevoEstado);
-                refreshTable();
-            } else {
-                JOptionPane.showMessageDialog(this, "No se pudo cambiar el estado VIP.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
+        boolean exito;
 
-    private void eliminarCliente(int rowIndex) {
-        if (rowIndex >= 0 && rowIndex < anfitriones.size()) {
-            int id = anfitriones.get(rowIndex).getId();
-            int confirm = JOptionPane.showConfirmDialog(this,
-                    "¿Eliminar al anfitrión seleccionado?", "Confirmar eliminación",
-                    JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                if (controller.eliminarAnfitrion(id)) {
-                    anfitriones = controller.obtenerTodos();
-                    refreshTable();
-                    clearForm();
-                    selectedIndex = -1;
-                    selectedId = -1;
-                    updateButtonStates();
-                } else {
-                    JOptionPane.showMessageDialog(this, "No se pudo eliminar el anfitrión.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }
-    }
+        boolean esNuevo = idSeleccionado == -1;
 
-    private void loadAnfitrionFromRow(int rowIndex) {
-        if (rowIndex >= 0 && rowIndex < anfitriones.size()) {
-            Anfitrion a = anfitriones.get(rowIndex);
-            txtNombre.setText(a.getNombre());
-            txtEmpresa.setText(a.getEmpresa());
-            txtDocumento.setText(a.getDocumento());
-            txtCorreo.setText(a.getCorreo());
-            txtTelefono.setText(a.getTelefono());
-            cbSegmento.setSelectedItem(a.getSegmento());
-        }
-    }
+        if (esNuevo) {
 
-    private void clearForm() {
-        txtNombre.setText("");
-        txtEmpresa.setText("");
-        txtDocumento.setText("");
-        txtCorreo.setText("");
-        txtTelefono.setText("");
-        cbSegmento.setSelectedIndex(0);
-        selectedId = -1;
-    }
+            exito = anfitrionDAO.insertar(a);
 
-    private void deselectTable() {
-        table.clearSelection();
-    }
-
-    private void refreshTable() {
-        model.setRowCount(0);
-        for (Anfitrion a : anfitriones) {
-            model.addRow(new Object[]{
-                a.getNombre(),
-                a.getSegmento(),
-                a.getTelefono(),
-                a.getCorreo(),
-                a.getProximoEvento(),
-                a.isVip() ? "★" : "☆",
-                "Eliminar"
-            });
-        }
-    }
-
-    private void updateButtonStates() {
-        if (selectedIndex >= 0) {
-            btnGuardar.setText("Actualizar perfil");
         } else {
-            btnGuardar.setText("Guardar perfil");
+
+            exito = anfitrionDAO.actualizar(a);
+        }
+
+        if (exito) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    esNuevo
+                            ? "Perfil creado correctamente."
+                            : "Perfil actualizado correctamente.",
+                    "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            limpiarFormulario();
+
+            cargarTabla();
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error al guardar el anfitrión.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
-    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, Component component) {
-        gbc.gridy = row;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        panel.add(new JLabel(label), gbc);
-        gbc.gridx = 1;
-        panel.add(component, gbc);
+    private void limpiarFormulario() {
+
+        idSeleccionado = -1;
+
+        txtNombre.setText("");
+
+        txtEmpresa.setText("");
+
+        txtDocumento.setText("");
+
+        txtCorreo.setText("");
+
+        txtTelefono.setText("");
+
+        cmbSegmento.setSelectedIndex(0);
+
+        chkVip.setSelected(false);
+
+        txtProximoEvento.setText("");
+
+        tablaAnfitriones.clearSelection();
+
+        btnGuardar.setText("Guardar perfil");
     }
 
-    // ================== Renderers y Editors ==================
+    private void eliminarAnfitrion(int id) {
 
-    class VipButtonRenderer implements TableCellRenderer {
-        private final JButton button = new JButton();
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "¿Está seguro de eliminar este anfitrión?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+
+            if (anfitrionDAO.eliminar(id)) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Anfitrión eliminado correctamente.",
+                        "Eliminado",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                cargarTabla();
+
+                limpiarFormulario();
+
+            } else {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Error al eliminar.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }
+
+    class ButtonRenderer extends JButton implements TableCellRenderer {
+
+        public ButtonRenderer() {
+
+            setOpaque(true);
+
+            setFocusPainted(false);
+
+            setBorder(new EmptyBorder(5, 10, 5, 10));
+        }
 
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
-            boolean isVip = anfitriones.get(row).isVip();
-            button.setText(isVip ? "★" : "☆");
-            button.setForeground(isVip ? Color.ORANGE : Color.GRAY);
-            button.setBorder(new EmptyBorder(5, 10, 5, 10));
-            button.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-            return button;
+        public Component getTableCellRendererComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                boolean hasFocus,
+                int row,
+                int column
+        ) {
+
+            setText("Eliminar");
+
+            setForeground(Color.WHITE);
+
+            setBackground(new Color(220, 53, 69));
+
+            return this;
         }
     }
 
-    class VipButtonEditor extends DefaultCellEditor {
-        private final JButton button;
-        private int row;
+    class ButtonEditor extends DefaultCellEditor {
 
-        public VipButtonEditor() {
-            super(new JCheckBox());
+        private JButton button;
+
+        private String label;
+
+        private int fila;
+
+        public ButtonEditor(JCheckBox checkBox) {
+
+            super(checkBox);
+
             button = new JButton();
-            button.setBorder(new EmptyBorder(5, 10, 5, 10));
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    toggleVip(row);
+
+            button.setOpaque(true);
+
+            button.setForeground(Color.WHITE);
+
+            button.setBackground(new Color(220, 53, 69));
+
+            button.setFocusPainted(false);
+
+            button.addActionListener(e -> {
+
+                List<Anfitrion> lista = anfitrionDAO.obtenerTodos();
+
+                if (fila >= 0 && fila < lista.size()) {
+
+                    eliminarAnfitrion(lista.get(fila).getId());
                 }
             });
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                                                     boolean isSelected, int row, int column) {
-            this.row = row;
-            boolean isVip = anfitriones.get(row).isVip();
-            button.setText(isVip ? "★" : "☆");
-            button.setForeground(isVip ? Color.ORANGE : Color.GRAY);
-            button.setBackground(table.getSelectionBackground());
+        public Component getTableCellEditorComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                int row,
+                int column
+        ) {
+
+            this.fila = row;
+
+            label = "Eliminar";
+
+            button.setText(label);
+
             return button;
         }
 
         @Override
         public Object getCellEditorValue() {
-            return anfitriones.get(row).isVip() ? "★" : "☆";
-        }
-    }
 
-    class DeleteButtonRenderer implements TableCellRenderer {
-        private final JButton button = new JButton("🗑 Eliminar");
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
-            button.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-            button.setForeground(Color.RED);
-            button.setBorder(new EmptyBorder(5, 10, 5, 10));
-            return button;
-        }
-    }
-
-    class DeleteButtonEditor extends DefaultCellEditor {
-        private final JButton button;
-        private int row;
-
-        public DeleteButtonEditor() {
-            super(new JCheckBox());
-            button = new JButton("🗑 Eliminar");
-            button.setForeground(Color.RED);
-            button.setBorder(new EmptyBorder(5, 10, 5, 10));
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    eliminarCliente(row);
-                }
-            });
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                                                     boolean isSelected, int row, int column) {
-            this.row = row;
-            button.setBackground(table.getSelectionBackground());
-            return button;
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            return "Eliminar";
+            return label;
         }
     }
 }

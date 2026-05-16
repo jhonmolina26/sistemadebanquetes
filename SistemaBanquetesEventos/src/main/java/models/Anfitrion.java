@@ -52,4 +52,9 @@ public class Anfitrion {
 
     public String getProximoEvento() { return proximoEvento; }
     public void setProximoEvento(String proximoEvento) { this.proximoEvento = proximoEvento; }
+    
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }

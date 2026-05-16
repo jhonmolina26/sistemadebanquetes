@@ -9,6 +9,7 @@ import ui.components.PlaceholderTextField;
 import ui.components.RoundedButton;
 import controller.EventoController;
 import models.Evento;
+import models.Anfitrion;
 
 public class ContratacionesPanel extends JPanel {
 
@@ -21,6 +22,12 @@ public class ContratacionesPanel extends JPanel {
     private JComboBox<String> cbTipoEvento;
     private JComboBox<String> cbPaquete;
     private JComboBox<String> cbEstado;
+    private JComboBox<Anfitrion> cbAnfitrion;
+    private JComboBox<String> cbFiltroTipoEvento;
+    private PlaceholderTextField txtFiltroFecha;
+    private JComboBox<String> cbFiltroEstado;
+    private RoundedButton btnBuscar;
+    private RoundedButton btnLimpiar;
 
     private JTable table;
     private DefaultTableModel model;
@@ -30,20 +37,21 @@ public class ContratacionesPanel extends JPanel {
     private RoundedButton btnEliminar;
 
     private List<Evento> eventos;
+    private List<Anfitrion> anfitriones;
     private int selectedIndex = -1;
 
     private EventoController controller = new EventoController();
     private int selectedId = -1;
 
-    // Datos fijos para los combos (ya que salones y anfitriones se cargan de BD en el futuro)
     private final String[] tiposEvento = {"Boda", "Corporativo", "XV Años", "Graduación", "Cena privada"};
     private final String[] paquetes = {"Premium", "Tradicional", "Corporativo", "Personalizado"};
-    private final String[] estados = {"Confirmado", "En propuesta", "Pendiente anticipo", "Bloqueado"};
+    private final String[] estados = {"Pendiente anticipo", "Confirmado", "En propuesta", "Bloqueado"};
 
     private final String[] columnNames = {"Código", "Evento", "Fecha", "Salón", "Invitados", "Estado"};
 
     public ContratacionesPanel() {
         eventos = controller.obtenerTodos();
+        anfitriones = controller.obtenerAnfitriones();
 
         setLayout(new BorderLayout(18, 18));
         setBorder(BorderFactory.createEmptyBorder(18, 18, 18, 18));
@@ -93,17 +101,23 @@ public class ContratacionesPanel extends JPanel {
         cbPaquete = new JComboBox<>(paquetes);
         cbEstado = new JComboBox<>(estados);
 
+        cbAnfitrion = new JComboBox<>();
+        for (Anfitrion a : anfitriones) {
+            cbAnfitrion.addItem(a);
+        }
+
         addField(card, gbc, 1, "Código", txtCodigo);
         addField(card, gbc, 2, "Fecha", txtFecha);
         addField(card, gbc, 3, "Tipo de evento", cbTipoEvento);
-        addField(card, gbc, 4, "Invitados", txtInvitados);
-        addField(card, gbc, 5, "Horario", txtHorario);
-        addField(card, gbc, 6, "Paquete", cbPaquete);
-        addField(card, gbc, 7, "Contacto", txtContacto);
-        addField(card, gbc, 8, "Servicios", txtServicios);
-        addField(card, gbc, 9, "Estado", cbEstado);
+        addField(card, gbc, 4, "Anfitrión", cbAnfitrion);
+        addField(card, gbc, 5, "Invitados", txtInvitados);
+        addField(card, gbc, 6, "Horario", txtHorario);
+        addField(card, gbc, 7, "Paquete", cbPaquete);
+        addField(card, gbc, 8, "Contacto", txtContacto);
+        addField(card, gbc, 9, "Servicios", txtServicios);
+        addField(card, gbc, 10, "Estado", cbEstado);
 
-        gbc.gridy = 10;
+        gbc.gridy = 11;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
@@ -132,43 +146,78 @@ public class ContratacionesPanel extends JPanel {
     }
 
     private JPanel buildTableCard() {
-        JPanel card = UiStyle.createCard();
-        card.setLayout(new BorderLayout(12, 12));
-        card.add(UiStyle.sectionTitle("Agenda de eventos"), BorderLayout.NORTH);
+    JPanel card = UiStyle.createCard();
+    card.setLayout(new BorderLayout(12, 12));
+    
+    // Panel superior: título + filtros
+    JPanel topPanel = new JPanel(new BorderLayout(12, 12));
+    topPanel.setOpaque(false);
+    topPanel.add(UiStyle.sectionTitle("Agenda de eventos"), BorderLayout.NORTH);
+    
+    // Panel de filtros
+    JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+    filterPanel.setOpaque(false);
+    
+    String[] filtroTipos = {"Todos", "Boda", "Corporativo", "XV Años", "Graduación", "Cena privada"};
+    String[] filtroEstados = {"Todos", "Pendiente anticipo", "Confirmado", "En propuesta", "Bloqueado"};
+    
+    cbFiltroTipoEvento = new JComboBox<>(filtroTipos);
+    txtFiltroFecha = new PlaceholderTextField("YYYY-MM-DD", 12);
+    cbFiltroEstado = new JComboBox<>(filtroEstados);
+    
+    btnBuscar = new RoundedButton("Buscar");
+    btnLimpiar = new RoundedButton("Limpiar");
+    
+    filterPanel.add(new JLabel("Tipo:"));
+    filterPanel.add(cbFiltroTipoEvento);
+    filterPanel.add(new JLabel("Fecha:"));
+    filterPanel.add(txtFiltroFecha);
+    filterPanel.add(new JLabel("Estado:"));
+    filterPanel.add(cbFiltroEstado);
+    filterPanel.add(btnBuscar);
+    filterPanel.add(btnLimpiar);
+    
+    topPanel.add(filterPanel, BorderLayout.CENTER);
+    card.add(topPanel, BorderLayout.NORTH);
+    
+    // Tabla
+    model = new DefaultTableModel(columnNames, 0) {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    };
 
-        model = new DefaultTableModel(columnNames, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+    table = new JTable(model);
+    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    UiStyle.styleTable(table);
 
-        table = new JTable(model);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        UiStyle.styleTable(table);
+    table.getSelectionModel().addListSelectionListener(e -> {
+        if (e.getValueIsAdjusting()) return;
+        int viewRow = table.getSelectedRow();
+        if (viewRow >= 0) {
+            selectedIndex = viewRow;
+            selectedId = eventos.get(viewRow).getId();
+            loadEventoFromRow(selectedIndex);
+        } else {
+            selectedIndex = -1;
+            selectedId = -1;
+        }
+        updateButtonStates();
+    });
+    
+    // Listeners de filtros
+    btnBuscar.addActionListener(e -> buscarEventos());
+    btnLimpiar.addActionListener(e -> limpiarFiltros());
 
-        table.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) return;
-            int viewRow = table.getSelectedRow();
-            if (viewRow >= 0) {
-                selectedIndex = viewRow;
-                selectedId = eventos.get(viewRow).getId();
-                loadEventoFromRow(selectedIndex);
-            } else {
-                selectedIndex = -1;
-                selectedId = -1;
-            }
-            updateButtonStates();
-        });
+    refreshTable();
 
-        refreshTable();
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        card.add(scrollPane, BorderLayout.CENTER);
+    JScrollPane scrollPane = new JScrollPane(table);
+    card.add(scrollPane, BorderLayout.CENTER);
         return card;
     }
 
-    // ================== CRUD ==================
+    //  CRUD 
 
     private void guardarEvento() {
         String codigo = txtCodigo.getText().trim();
@@ -177,21 +226,74 @@ public class ContratacionesPanel extends JPanel {
             return;
         }
 
+        Date fecha = parseFecha(txtFecha.getText().trim());
+        if (fecha == null) {
+            JOptionPane.showMessageDialog(this, "La fecha no es válida. Use formato YYYY-MM-DD.", "Validación", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int invitados = parseInt(txtInvitados.getText().trim(), 0);
+        if (invitados <= 0) {
+            JOptionPane.showMessageDialog(this, "El número de invitados debe ser mayor a 0.", "Validación", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String horario = txtHorario.getText().trim();
+        if (horario.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "El horario es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         Evento ev = new Evento();
         ev.setCodigo(codigo);
         ev.setTipoEvento((String) cbTipoEvento.getSelectedItem());
-        ev.setFecha(parseFecha(txtFecha.getText().trim()));
-        ev.setSalonId(1);  // Temporal: puedes añadir un combo para salones después
-        ev.setInvitados(parseInt(txtInvitados.getText().trim(), 0));
-        ev.setHorario(txtHorario.getText().trim());
+        ev.setFecha(fecha);
+        ev.setSalonId(1);  // Temporal: hasta que agregen el módulo de Salones
+
+        Anfitrion anfitrionSeleccionado = (Anfitrion) cbAnfitrion.getSelectedItem();
+        ev.setAnfitrionId(anfitrionSeleccionado != null ? anfitrionSeleccionado.getId() : 1);
+
+        ev.setInvitados(invitados);
+        ev.setHorario(horario);
         ev.setPaquete((String) cbPaquete.getSelectedItem());
         ev.setContacto(txtContacto.getText().trim());
         ev.setServicios(txtServicios.getText().trim());
         ev.setEstado((String) cbEstado.getSelectedItem());
-        ev.setAnfitrionId(1); // Temporal: luego se añade combo de anfitriones
 
         boolean esNuevo = (selectedId == -1);
+
         if (!esNuevo) {
+            // Validar que no esté bloqueado
+            Evento eventoActual = null;
+            for (Evento e : eventos) {
+                if (e.getId() == selectedId) {
+                    eventoActual = e;
+                    break;
+                }
+            }
+
+            if (eventoActual != null && "Bloqueado".equals(eventoActual.getEstado())) {
+                JOptionPane.showMessageDialog(this,
+                    "No se puede modificar un evento en estado 'Bloqueado'.",
+                    "Restricción", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Validar disponibilidad del salón si cambió fecha u horario
+            boolean fechaCambio = !fecha.equals(eventoActual.getFecha());
+            boolean horarioCambio = !horario.equals(eventoActual.getHorario());
+
+            if (fechaCambio || horarioCambio) {
+                boolean disponible = controller.verificarDisponibilidadSalon(
+                    ev.getSalonId(), fecha, horario, selectedId);
+                if (!disponible) {
+                    JOptionPane.showMessageDialog(this,
+                        "El salón no está disponible en esa fecha y horario.",
+                        "Conflicto de disponibilidad", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+            }
+
             ev.setId(selectedId);
         }
 
@@ -246,6 +348,30 @@ public class ContratacionesPanel extends JPanel {
             cbTipoEvento.setSelectedItem(ev.getTipoEvento());
             cbPaquete.setSelectedItem(ev.getPaquete());
             cbEstado.setSelectedItem(ev.getEstado());
+
+            for (int i = 0; i < cbAnfitrion.getItemCount(); i++) {
+                if (cbAnfitrion.getItemAt(i).getId() == ev.getAnfitrionId()) {
+                    cbAnfitrion.setSelectedIndex(i);
+                    break;
+                }
+            }
+
+            // Validar si está bloqueado para deshabilitar campos
+            boolean bloqueado = "Bloqueado".equals(ev.getEstado());
+            txtCodigo.setEnabled(false); // El código nunca se modifica
+            txtFecha.setEnabled(!bloqueado);
+            txtInvitados.setEnabled(!bloqueado);
+            txtHorario.setEnabled(!bloqueado);
+            txtContacto.setEnabled(!bloqueado);
+            txtServicios.setEnabled(!bloqueado);
+            cbTipoEvento.setEnabled(!bloqueado);
+            cbPaquete.setEnabled(!bloqueado);
+            cbAnfitrion.setEnabled(!bloqueado);
+
+            if (bloqueado) {
+                btnGuardar.setText("EVENTO BLOQUEADO");
+                btnGuardar.setEnabled(false);
+            }
         }
     }
 
@@ -259,7 +385,21 @@ public class ContratacionesPanel extends JPanel {
         cbTipoEvento.setSelectedIndex(0);
         cbPaquete.setSelectedIndex(0);
         cbEstado.setSelectedIndex(0);
+        if (cbAnfitrion.getItemCount() > 0) cbAnfitrion.setSelectedIndex(0);
         selectedId = -1;
+
+        // Re-habilitar todos los campos
+        txtCodigo.setEnabled(true);
+        txtFecha.setEnabled(true);
+        txtInvitados.setEnabled(true);
+        txtHorario.setEnabled(true);
+        txtContacto.setEnabled(true);
+        txtServicios.setEnabled(true);
+        cbTipoEvento.setEnabled(true);
+        cbPaquete.setEnabled(true);
+        cbEstado.setEnabled(true);
+        cbAnfitrion.setEnabled(true);
+        btnGuardar.setEnabled(true);
     }
 
     private void deselectTable() {
@@ -299,7 +439,6 @@ public class ContratacionesPanel extends JPanel {
         panel.add(component, gbc);
     }
 
-    // Utilidades
     private Date parseFecha(String texto) {
         try {
             return Date.valueOf(texto);
@@ -314,5 +453,30 @@ public class ContratacionesPanel extends JPanel {
         } catch (NumberFormatException e) {
             return valorDefault;
         }
+    }
+    
+    private void buscarEventos() {
+        String tipoEvento = (String) cbFiltroTipoEvento.getSelectedItem();
+        String fecha = txtFiltroFecha.getText().trim();
+        String estado = (String) cbFiltroEstado.getSelectedItem();
+
+        eventos = controller.buscar(tipoEvento, fecha, estado);
+        refreshTable();
+        clearForm();
+        selectedIndex = -1;
+        selectedId = -1;
+        updateButtonStates();
+    }
+
+    private void limpiarFiltros() {
+        cbFiltroTipoEvento.setSelectedIndex(0);
+        txtFiltroFecha.setText("");
+        cbFiltroEstado.setSelectedIndex(0);
+        eventos = controller.obtenerTodos();
+        refreshTable();
+        clearForm();
+        selectedIndex = -1;
+        selectedId = -1;
+        updateButtonStates();
     }
 }
