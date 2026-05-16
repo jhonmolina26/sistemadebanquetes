@@ -3,13 +3,16 @@ package controller;
 import dao.EventoDAO;
 import models.Evento;
 import java.util.List;
+import models.Anfitrion;
 
 public class EventoController {
 
     private EventoDAO dao;
+    private AnfitrionController anfitrionController;
 
     public EventoController() {
         this.dao = new EventoDAO();
+        this.anfitrionController = new AnfitrionController();
     }
 
     public List<Evento> obtenerTodos() {
@@ -26,5 +29,9 @@ public class EventoController {
 
     public boolean eliminarEvento(int id) {
         return dao.eliminar(id);
+    }
+    
+    public List<Anfitrion> obtenerAnfitriones() {
+        return anfitrionController.obtenerTodos();
     }
 }
