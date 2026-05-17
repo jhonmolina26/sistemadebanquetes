@@ -148,7 +148,7 @@ public class EventoControllerTest {
         assertFalse("CP4 - Debería fallar por id inexistente", resultado);
     }
     
-    // 2do Método --- 
+    // 2do Método --- buscar
 
     // 5: Búscamos por fecha "2026-04-27" -- CORRECTO
     @Test
