@@ -49,7 +49,7 @@ public class EventoController {
         }
 
         if (existente != null && "Bloqueado".equals(existente.getEstado())) {
-            return false; // No se puede modificar un evento bloqueado
+            return false; // No podemos modificar un evento bloqueado
         }
 
         return dao.actualizar(ev);

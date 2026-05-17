@@ -15,9 +15,9 @@ public class EventoControllerTest {
         controller = new EventoController();
     }
 
-    // ================== guardarEvento (CC=2) ==================
+    // 1er Método ---- guardarEvento
 
-    // CP1: Insertar nuevo evento (CORRECTO)
+    // 1: Insertamos nuevo evento -- CORRECTO
     @Test
     public void testGuardarEvento_InsertarCorrecto() {
         Evento ev = new Evento();
@@ -45,7 +45,7 @@ public class EventoControllerTest {
         }
     }
 
-    // CP2: Insertar con código duplicado (ERROR)
+    // 2: Insertamos con código duplicado -- ERROR
     @Test
     public void testGuardarEvento_InsertarDuplicado() {
         Evento ev1 = new Evento();
@@ -87,7 +87,7 @@ public class EventoControllerTest {
         }
     }
 
-    // CP3: Actualizar evento existente (CORRECTO)
+    // 3: Actualizamos evento existente -- CORRECTO
     @Test
     public void testGuardarEvento_ActualizarCorrecto() {
         // Insertar nuevo
@@ -105,7 +105,7 @@ public class EventoControllerTest {
         ev.setAnfitrionId(1);
         controller.guardarEvento(ev, true);
 
-        // Obtener ID real
+        // Obtenemos ID real
         List<Evento> lista = controller.obtenerTodos();
         int idReal = -1;
         for (Evento e : lista) {
@@ -115,7 +115,7 @@ public class EventoControllerTest {
             }
         }
 
-        // Actualizar con ID real
+        // Actualizamos con ID real
         ev.setId(idReal);
         ev.setEstado("Confirmado");
         ev.setInvitados(50);
@@ -123,11 +123,11 @@ public class EventoControllerTest {
         boolean resultado = controller.guardarEvento(ev, false);
         assertTrue("CP3 - Debería actualizar correctamente", resultado);
         
-        // Limpiar
+       // Limpiar
         controller.eliminarEvento(idReal);
     }
 
-    // CP4: Actualizar con id inexistente (ERROR)
+    // 4: Actualizamos con id inexistente -- ERROR
     @Test
     public void testGuardarEvento_ActualizarInexistente() {
         Evento ev = new Evento();
@@ -147,46 +147,25 @@ public class EventoControllerTest {
         boolean resultado = controller.guardarEvento(ev, false);
         assertFalse("CP4 - Debería fallar por id inexistente", resultado);
     }
+    
+    // 2do Método --- 
 
-    // ================== eliminarEvento (CC=1) ==================
-
-    // CP5: Eliminar evento existente (CORRECTO)
+    // 5: Búscamos por fecha "2026-04-27" -- CORRECTO
     @Test
-    public void testEliminarEvento_Correcto() {
-        // Insertar nuevo
-        Evento ev = new Evento();
-        ev.setCodigo("EVT-DEL-001");
-        ev.setTipoEvento("Graduacion");
-        ev.setFecha(Date.valueOf("2026-11-20"));
-        ev.setSalonId(3);
-        ev.setInvitados(150);
-        ev.setHorario("19:00 - 1:00");
-        ev.setPaquete("Tradicional");
-        ev.setContacto("Luisa Fernanda");
-        ev.setServicios("DJ, buffet");
-        ev.setEstado("Pendiente anticipo");
-        ev.setAnfitrionId(1);
-        controller.guardarEvento(ev, true);
-
-        // Obtener ID real
-        List<Evento> lista = controller.obtenerTodos();
-        int idReal = -1;
-        for (Evento e : lista) {
-            if ("EVT-DEL-001".equals(e.getCodigo())) {
-                idReal = e.getId();
-                break;
-            }
+    public void testBuscar_PorFecha() {
+        List<Evento> lista = controller.buscar("Todos", "2026-04-27", "Todos");
+        assertNotNull("CP5 - La lista no debe ser null", lista);
+        for (Evento ev : lista) {
+            assertEquals("CP5 - Fecha debe coincidir", 
+                Date.valueOf("2026-04-27"), ev.getFecha());
         }
-
-        // Eliminar con ID real
-        boolean resultado = controller.eliminarEvento(idReal);
-        assertTrue("CP5 - Debería eliminar correctamente", resultado);
     }
-
-    // CP6: Eliminar con id inexistente (ERROR)
+    
+    // 6: Búscamos por fecha sin resultados -- ERROR
     @Test
-    public void testEliminarEvento_Inexistente() {
-        boolean resultado = controller.eliminarEvento(9999);
-        assertFalse("CP6 - Debería fallar por id inexistente", resultado);
+    public void testBuscar_PorFechaSinResultados() {
+        List<Evento> lista = controller.buscar("Todos", "2020-01-01", "Todos");
+        assertNotNull("CP6 - La lista no debe ser null", lista);
+        assertEquals("CP6 - Debe estar vacía", 0, lista.size());
     }
 }
