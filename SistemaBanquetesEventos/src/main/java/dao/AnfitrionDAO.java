@@ -5,6 +5,7 @@ import models.Anfitrion;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 public class AnfitrionDAO {
 
@@ -74,18 +75,41 @@ public class AnfitrionDAO {
         }
     }
 
-    public boolean eliminar(int id) {
-        String sql = "DELETE FROM anfitriones WHERE id=?";
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("Error al eliminar: " + e.getMessage());
-            return false;
-        }
-    }
+public boolean eliminar(int id) {
 
+    String sql = "DELETE FROM anfitriones WHERE id=?";
+
+    try (Connection conn = ConexionBD.conectar();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, id);
+
+        return pstmt.executeUpdate() > 0;
+
+    } catch (SQLException e) {
+
+        if (e.getErrorCode() == 547) {
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "No se puede eliminar el anfitrión porque tiene eventos asociados.",
+                    "Operación no permitida",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Error al eliminar:\n" + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+
+        return false;
+    }
+}
     public boolean toggleVip(int id, boolean nuevoEstado) {
         String sql = "UPDATE anfitriones SET vip=? WHERE id=?";
         try (Connection conn = ConexionBD.conectar();

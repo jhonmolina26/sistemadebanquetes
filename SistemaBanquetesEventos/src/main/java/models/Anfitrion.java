@@ -11,7 +11,11 @@ public class Anfitrion {
     private boolean vip;
     private String proximoEvento;
 
-    public Anfitrion() {}
+   /**
+ * Constructor vacío de la clase Anfitrion.
+ */
+public Anfitrion() {
+}
 
     public Anfitrion(int id, String nombre, String empresa, String documento, String correo,
                      String telefono, String segmento, boolean vip, String proximoEvento) {

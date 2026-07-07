@@ -12,6 +12,10 @@ public class MenuController {
         this.dao = new MenuDAO();
     }
 
+    public MenuController(MenuDAO dao) {
+        this.dao = dao;
+    }
+
     public List<Menu> obtenerTodos() {
         return dao.obtenerTodos();
     }
