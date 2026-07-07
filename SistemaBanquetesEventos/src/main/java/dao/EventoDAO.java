@@ -106,25 +106,32 @@ public class EventoDAO {
     }
     
     public boolean verificarDisponibilidadSalon(int salonId, Date fecha, String horario, int eventoIdExcluir) {
+
     String sql = "SELECT COUNT(*) FROM eventos " +
-                 "WHERE salon_id = ? AND fecha = ? AND horario = ? " +
-                 "AND estado != 'Bloqueado' AND id != ?";
+                 "WHERE salon_id = ? " +
+                 "AND fecha = ? " +
+                 "AND estado <> 'Bloqueado' " +
+                 "AND id <> ?";
+
     try (Connection conn = ConexionBD.conectar();
          PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
         pstmt.setInt(1, salonId);
         pstmt.setDate(2, fecha);
-        pstmt.setString(3, horario);
-        pstmt.setInt(4, eventoIdExcluir);
+        pstmt.setInt(3, eventoIdExcluir);
+
         try (ResultSet rs = pstmt.executeQuery()) {
             if (rs.next()) {
-                return rs.getInt(1) == 0; // true = disponible
+                return rs.getInt(1) == 0;
             }
         }
+
     } catch (SQLException e) {
         System.err.println("Error al verificar disponibilidad: " + e.getMessage());
     }
-        return false;
-    }
+
+    return false;
+}
     
     // meetodo que nos sirve para buscar por medio del tipoEvent, fecha y el estado
     public List<Evento> buscar(String tipoEvento, String fecha, String estado) {

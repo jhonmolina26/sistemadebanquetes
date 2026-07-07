@@ -1,9 +1,10 @@
-package view;
+package vista;
 
+import Vista.UiStyle;
 import controller.SalonController;
 import model.Salon;
-import view.components.PlaceholderTextField;
-import view.components.RoundedButton;
+import ui.components.PlaceholderTextField;
+import ui.components.RoundedButton;
 
 import java.awt.*;
 import java.util.List;
