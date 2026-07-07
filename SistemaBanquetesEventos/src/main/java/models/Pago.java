@@ -8,7 +8,7 @@ public class Pago {
     private String codigoEvento; 
     private BigDecimal total;
     private BigDecimal anticipo;
-    private BigDecimal saldo; // 
+    private BigDecimal saldo; 
     private String factura;
     private String metodo;
     private String estado;

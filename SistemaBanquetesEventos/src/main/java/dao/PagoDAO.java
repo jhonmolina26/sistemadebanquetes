@@ -30,7 +30,7 @@ public class PagoDAO {
                 pago.setCodigoEvento(rs.getString("codigo_evento"));
                 pago.setTotal(rs.getBigDecimal("total"));
                 pago.setAnticipo(rs.getBigDecimal("anticipo"));
-                pago.setSaldo(rs.getBigDecimal("saldo")); // Lo leemos, porque SQL Server lo calculó
+                pago.setSaldo(rs.getBigDecimal("saldo")); 
                 pago.setFactura(rs.getString("factura"));
                 pago.setMetodo(rs.getString("metodo"));
                 pago.setEstado(rs.getString("estado"));

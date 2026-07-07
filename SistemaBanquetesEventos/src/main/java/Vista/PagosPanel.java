@@ -1,3 +1,4 @@
+
 package Vista;
 
 import controller.PagoController;
@@ -18,6 +19,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import ui.components.PlaceholderTextField;
 import ui.components.RoundedButton;
@@ -30,7 +33,7 @@ public class PagosPanel extends JPanel {
     private PlaceholderTextField txtAnticipo;
     private PlaceholderTextField txtSaldo;
     private PlaceholderTextField txtFactura;
-    private PlaceholderTextField txtMetodo;
+    private JComboBox<String> cbMetodo; // MODIFICACIÓN 1: Ahora es un JComboBox
     private JTable table;
     private DefaultTableModel tableModel;
 
@@ -67,7 +70,16 @@ public class PagosPanel extends JPanel {
         txtSaldo = new PlaceholderTextField("0.00", 16);
         txtSaldo.setEditable(false);
         txtFactura = new PlaceholderTextField("Ej. FAC-001245", 16);
-        txtMetodo = new PlaceholderTextField("Transferencia / Tarjeta / Efectivo", 16);
+        
+        // MODIFICACIÓN 1: Inicialización del JComboBox con las opciones del RF-1
+        cbMetodo = new JComboBox<>(new String[]{"Transferencia", "Tarjeta", "Efectivo"});
+
+        // MODIFICACIÓN 2: Listener para el cálculo automático del saldo
+        txtAnticipo.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { calcularSaldo(); }
+            public void removeUpdate(DocumentEvent e) { calcularSaldo(); }
+            public void changedUpdate(DocumentEvent e) { calcularSaldo(); }
+        });
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
@@ -83,7 +95,7 @@ public class PagosPanel extends JPanel {
         addField(card, gbc, 3, "Anticipo", txtAnticipo);
         addField(card, gbc, 4, "Saldo pendiente", txtSaldo);
         addField(card, gbc, 5, "Factura", txtFactura);
-        addField(card, gbc, 6, "Metodo", txtMetodo);
+        addField(card, gbc, 6, "Metodo", cbMetodo); // MODIFICACIÓN 1: Se añade el combo
 
         gbc.gridy = 7;
         gbc.gridwidth = 2;
@@ -171,38 +183,102 @@ public class PagosPanel extends JPanel {
         txtSaldo.setText(table.getValueAt(fila, 5).toString());
         txtFactura.setText(table.getValueAt(fila, 6).toString());
         cbEstado.setSelectedItem(table.getValueAt(fila, 7).toString());
-        txtMetodo.setText(table.getValueAt(fila, 8).toString());
+        // MODIFICACIÓN 1: Se actualiza el ComboBox en lugar del TextField
+        cbMetodo.setSelectedItem(table.getValueAt(fila, 8).toString()); 
+    }
+
+    // MODIFICACIÓN 2: Método para calcular el saldo dinámicamente
+    private void calcularSaldo() {
+        try {
+            int fila = table.getSelectedRow();
+            if (fila != -1) {
+                BigDecimal total = (BigDecimal) table.getValueAt(fila, 3);
+                BigDecimal anticipo = new BigDecimal(txtAnticipo.getText().trim());
+                
+                if (anticipo.compareTo(BigDecimal.ZERO) >= 0 && anticipo.compareTo(total) <= 0) {
+                    BigDecimal saldo = total.subtract(anticipo);
+                    txtSaldo.setText(saldo.toString());
+                } else if (anticipo.compareTo(total) > 0) {
+                    txtSaldo.setText("0.00"); // No puede haber saldo negativo
+                }
+            }
+        } catch (NumberFormatException ignored) {
+            // Se ignora el error mientras el usuario teclea (ej. si borra todo)
+        }
+    }
+
+    private boolean validarCampos() {
+        if (cbContratacion.getSelectedItem() == null || cbContratacion.getSelectedItem().toString().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un evento de contratación válido.", "Campo Obligatorio", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        String anticipoTexto = txtAnticipo.getText().trim();
+        if (anticipoTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "El campo de 'Anticipo' es obligatorio para registrar el pago.", "Campo Obligatorio", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        
+        try {
+            BigDecimal anticipo = new BigDecimal(anticipoTexto);
+            if (anticipo.compareTo(BigDecimal.ZERO) < 0) {
+                JOptionPane.showMessageDialog(this, "El anticipo no puede ser un valor negativo.", "Restricción de Valor", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "El anticipo debe ser un valor numérico decimal válido (Ej: 150.50).", "Formato Inválido", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        // MODIFICACIÓN 1: La validación ahora asegura que el ComboBox tenga una selección válida
+        if (cbMetodo.getSelectedItem() == null) {
+            JOptionPane.showMessageDialog(this, "Debe especificar el método de pago.", "Campo Obligatorio", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        return true; 
     }
 
     private void guardarCambiosBD(boolean esNuevo) {
         int fila = table.getSelectedRow();
+        
         if (!esNuevo && fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un registro de la tabla.");
+            JOptionPane.showMessageDialog(this, "Seleccione un registro de la tabla para actualizar.", "Atención", JOptionPane.WARNING_MESSAGE);
             return;
         }
+
+        if (!validarCampos()) {
+            return; 
+        }
+
         try {
             Pago pago = new Pago();
             if (!esNuevo) pago.setId((int) table.getValueAt(fila, 0));
             pago.setEventoId((int) table.getValueAt(fila, 1));
             pago.setTotal((BigDecimal) table.getValueAt(fila, 3));
             pago.setAnticipo(new BigDecimal(txtAnticipo.getText().trim()));
+            
+            // MODIFICACIÓN 3: Obtener el saldo calculado y el método desde el JComboBox
+            BigDecimal saldo = txtSaldo.getText().trim().isEmpty() ? BigDecimal.ZERO : new BigDecimal(txtSaldo.getText().trim());
+            pago.setSaldo(saldo); 
+            pago.setMetodo(cbMetodo.getSelectedItem().toString()); 
+            
             pago.setFactura(txtFactura.getText().trim());
-            pago.setMetodo(txtMetodo.getText().trim());
             pago.setEstado(cbEstado.getSelectedItem().toString());
 
             if (controller.guardarPago(pago, esNuevo)) {
-                JOptionPane.showMessageDialog(this, esNuevo ? "Registro creado." : "Registro actualizado.");
+                JOptionPane.showMessageDialog(this, esNuevo ? "Registro de pago guardado exitosamente." : "Registro de pago actualizado exitosamente.", "Confirmación", JOptionPane.INFORMATION_MESSAGE);
                 cargarDatosTabla();
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: Verifique que el monto sea numérico.");
+            JOptionPane.showMessageDialog(this, "Ocurrió un error inesperado al guardar el registro. Verifique los datos.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void emitirFacturaProceso() {
         int fila = table.getSelectedRow();
         if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un registro primero.");
+            JOptionPane.showMessageDialog(this, "Seleccione un registro de la tabla primero.", "Atención", JOptionPane.WARNING_MESSAGE);
             return;
         }
         String numFactura = "FAC-" + (int) (Math.random() * 100000);
@@ -226,10 +302,10 @@ public class PagosPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Seleccione un registro para eliminar.");
             return;
         }
-        int confirm = JOptionPane.showConfirmDialog(this, "¿Eliminar este registro?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Eliminar este registro de forma permanente?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             if (controller.eliminarPago((int) table.getValueAt(fila, 0))) {
-                JOptionPane.showMessageDialog(this, "Registro eliminado.");
+                JOptionPane.showMessageDialog(this, "Registro eliminado del sistema.");
                 cargarDatosTabla();
             }
         }
