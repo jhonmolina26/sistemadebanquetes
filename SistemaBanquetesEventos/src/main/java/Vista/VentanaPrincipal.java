@@ -10,7 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
-import java.awt.*;
+
 
 public class VentanaPrincipal extends JFrame {
 
