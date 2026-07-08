@@ -11,7 +11,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 
-
 public class VentanaPrincipal extends JFrame {
 
     public VentanaPrincipal() {
@@ -28,7 +27,7 @@ public class VentanaPrincipal extends JFrame {
         tabs.setBackground(Color.WHITE);
 
         ContratacionesPanel contratacionesPanel = new ContratacionesPanel();
-        SalonesPanel salonesPanel = new SalonesPanel();
+        VSalones salonesPanel = new VSalones();
         AnfitrionesPanel anfitrionesPanel = new AnfitrionesPanel();
         MenusPanel menusPanel = new MenusPanel();
         PagosPanel pagosPanel = new PagosPanel();

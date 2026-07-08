@@ -1,6 +1,4 @@
-package vista;
-
-import Vista.UiStyle;
+package Vista;
 import controller.SalonController;
 import model.Salon;
 import ui.components.PlaceholderTextField;
@@ -16,7 +14,7 @@ public class VSalones extends JPanel {
     private final SalonController ctrl = new SalonController();
 
     // Campos del formulario
-    private PlaceholderTextField txtNombre, txtCapacidad, txtDescripcion;
+    private PlaceholderTextField txtNombre, txtCapacidad;
     private JComboBox<String>    cbUbicacion, cbMontaje, cbEstado;
 
     // Tabla
@@ -74,8 +72,6 @@ public class VSalones extends JPanel {
 
         txtNombre      = new PlaceholderTextField("Nombre del salón", 18);
         txtCapacidad   = new PlaceholderTextField("Ej. 220", 18);
-        txtDescripcion = new PlaceholderTextField("Descripción opcional", 18);
-
         cbUbicacion = new JComboBox<>(new String[]{"Interior", "Jardin", "Terraza", "VIP"});
         cbMontaje   = new JComboBox<>(new String[]{"Banquete", "Auditorio", "Escuela", "Imperial", "Coctel"});
         cbEstado    = new JComboBox<>(new String[]{"Disponible", "Reservado", "Mantenimiento"});
@@ -85,16 +81,15 @@ public class VSalones extends JPanel {
         addField(card, gbc, 3, "Ubicación",   cbUbicacion);
         addField(card, gbc, 4, "Montaje",     cbMontaje);
         addField(card, gbc, 5, "Estado",      cbEstado);
-        addField(card, gbc, 6, "Descripción", txtDescripcion);
 
         // Mensaje de feedback
         lblMensaje = new JLabel(" ");
         lblMensaje.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        gbc.gridy = 7; gbc.gridx = 0; gbc.gridwidth = 2;
+        gbc.gridy = 6; gbc.gridx = 0; gbc.gridwidth = 2;
         card.add(lblMensaje, gbc);
 
         // Botones de acción
-        gbc.gridy = 8;
+        gbc.gridy = 7;
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         actions.setOpaque(false);
 
@@ -117,14 +112,15 @@ public class VSalones extends JPanel {
     private JPanel buildTableCard() {
         JPanel card = UiStyle.createCard();
         card.setLayout(new BorderLayout(12, 12));
-        card.add(UiStyle.sectionTitle("Mapa de ocupación"), BorderLayout.NORTH);
+        card.add(UiStyle.sectionTitle("Salones registrados"), BorderLayout.NORTH);
 
         modelo = new DefaultTableModel(
-            new String[]{"ID", "Salón", "Capacidad", "Montaje", "Ubicación", "Estado", "Descripción"}, 0) {
+            new String[]{"ID", "Salón", "Capacidad", "Montaje", "Ubicación", "Estado"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tabla = new JTable(modelo);
         UiStyle.styleTable(tabla);
+        tabla.setFillsViewportHeight(true);
         tabla.getColumnModel().getColumn(0).setMaxWidth(45);
         tabla.getColumnModel().getColumn(2).setMaxWidth(80);
 
@@ -149,7 +145,9 @@ public class VSalones extends JPanel {
         footer.add(btnLiberar);
         footer.add(btnMantenimiento);
 
-        card.add(new JScrollPane(tabla), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(tabla);
+        scroll.setPreferredSize(new Dimension(720, 420));
+        card.add(scroll, BorderLayout.CENTER);
         card.add(footer, BorderLayout.SOUTH);
         return card;
     }
@@ -165,7 +163,7 @@ public class VSalones extends JPanel {
             (String) cbUbicacion.getSelectedItem(),
             (String) cbMontaje.getSelectedItem(),
             (String) cbEstado.getSelectedItem(),
-            txtDescripcion.getText().trim()
+            ""
         );
         mostrarMensaje(msg);
         if (msg.startsWith("OK")) { limpiarFormulario(); cargarTabla(); }
@@ -212,7 +210,6 @@ public class VSalones extends JPanel {
         cbMontaje.setSelectedItem(modelo.getValueAt(row, 3));
         cbUbicacion.setSelectedItem(modelo.getValueAt(row, 4));
         cbEstado.setSelectedItem(modelo.getValueAt(row, 5));
-        txtDescripcion.setText((String) modelo.getValueAt(row, 6));
         lblMensaje.setText(" ");
     }
 
@@ -224,7 +221,7 @@ public class VSalones extends JPanel {
             modelo.addRow(new Object[]{
                 s.getIdSalon(), s.getNombre(), s.getCapacidad(),
                 s.getTipoMontajePrincipal(), s.getUbicacion(),
-                s.getEstado(), s.getDescripcion()
+                s.getEstado()
             });
         }
     }
@@ -234,7 +231,6 @@ public class VSalones extends JPanel {
         idSeleccionado = 0;
         txtNombre.setText("");
         txtCapacidad.setText("");
-        txtDescripcion.setText("");
         cbUbicacion.setSelectedIndex(0);
         cbMontaje.setSelectedIndex(0);
         cbEstado.setSelectedIndex(0);

@@ -1,4 +1,4 @@
-package controller;
+    package controller;
 
 import dao.MenuDAO;
 import java.util.List;
@@ -6,7 +6,7 @@ import models.Menu;
 
 public class MenuController {
 
-    private final MenuDAO dao;
+    private final MenuDAO dao;  
 
     public MenuController() {
         this.dao = new MenuDAO();

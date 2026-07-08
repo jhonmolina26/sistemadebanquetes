@@ -2,6 +2,7 @@
 package Vista;
 
 import controller.PagoController;
+import models.Evento;
 import models.Pago;
 
 import java.awt.BorderLayout;
@@ -9,8 +10,9 @@ import java.awt.GridLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
@@ -36,6 +38,7 @@ public class PagosPanel extends JPanel {
     private JComboBox<String> cbMetodo; // MODIFICACIÓN 1: Ahora es un JComboBox
     private JTable table;
     private DefaultTableModel tableModel;
+    private List<Evento> contrataciones;
 
     public PagosPanel() {
         controller = new PagoController();
@@ -49,6 +52,12 @@ public class PagosPanel extends JPanel {
         content.add(buildTableCard(), BorderLayout.CENTER);
         add(content, BorderLayout.CENTER);
         cargarDatosTabla();
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                cargarDatosTabla();
+            }
+        });
     }
 
     private JPanel buildHeader() {
@@ -163,16 +172,19 @@ public class PagosPanel extends JPanel {
 
     private void cargarDatosTabla() {
         tableModel.setRowCount(0);
-        cbContratacion.removeAllItems();
+        cargarContrataciones();
         List<Pago> listaPagos = controller.obtenerTodos();
-        List<String> eventosAgregados = new ArrayList<>();
         for (Pago pago : listaPagos) {
             String codigo = pago.getCodigoEvento();
-            if (codigo != null && !eventosAgregados.contains(codigo)) {
-                eventosAgregados.add(codigo);
-                cbContratacion.addItem(codigo);
-            }
             tableModel.addRow(new Object[]{pago.getId(), pago.getEventoId(), codigo, pago.getTotal(), pago.getAnticipo(), pago.getSaldo(), pago.getFactura(), pago.getEstado(), pago.getMetodo()});
+        }
+    }
+
+    private void cargarContrataciones() {
+        cbContratacion.removeAllItems();
+        contrataciones = controller.obtenerContrataciones();
+        for (Evento evento : contrataciones) {
+            cbContratacion.addItem(evento.getCodigo());
         }
     }
 
@@ -254,9 +266,11 @@ public class PagosPanel extends JPanel {
         try {
             Pago pago = new Pago();
             if (!esNuevo) pago.setId((int) table.getValueAt(fila, 0));
-            pago.setEventoId((int) table.getValueAt(fila, 1));
-            pago.setTotal((BigDecimal) table.getValueAt(fila, 3));
-            pago.setAnticipo(new BigDecimal(txtAnticipo.getText().trim()));
+            BigDecimal anticipo = new BigDecimal(txtAnticipo.getText().trim());
+            BigDecimal total = esNuevo ? anticipo : (BigDecimal) table.getValueAt(fila, 3);
+            pago.setEventoId(obtenerEventoIdSeleccionado());
+            pago.setTotal(total);
+            pago.setAnticipo(anticipo);
             
             // MODIFICACIÓN 3: Obtener el saldo calculado y el método desde el JComboBox
             BigDecimal saldo = txtSaldo.getText().trim().isEmpty() ? BigDecimal.ZERO : new BigDecimal(txtSaldo.getText().trim());
@@ -273,6 +287,16 @@ public class PagosPanel extends JPanel {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Ocurrió un error inesperado al guardar el registro. Verifique los datos.", "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private int obtenerEventoIdSeleccionado() {
+        String codigoSeleccionado = cbContratacion.getSelectedItem().toString();
+        for (Evento evento : contrataciones) {
+            if (codigoSeleccionado.equals(evento.getCodigo())) {
+                return evento.getId();
+            }
+        }
+        return -1;
     }
 
     private void emitirFacturaProceso() {

@@ -2,10 +2,11 @@ package controller;
 
 import dao.SalonDAO;
 import model.Salon;
-
 import java.util.List;
 
 public class SalonController {
+    
+    
 
     private final SalonDAO dao = new SalonDAO();
 
@@ -17,16 +18,19 @@ public class SalonController {
     // ── Guardar (insertar o actualizar) ───────────────────────────────────────
     public String guardar(int idSalon, String nombre, String capacidadStr,
                           String ubicacion, String montaje, String estado, String descripcion) {
-
+        
         if (nombre == null || nombre.isBlank())
             return "ERROR: El nombre del salón es requerido.";
         if (capacidadStr == null || capacidadStr.isBlank())
             return "ERROR: La capacidad es requerida.";
-
+        
         int capacidad;
         try {
             capacidad = Integer.parseInt(capacidadStr.trim());
+            
             if (capacidad < 1) return "ERROR: La capacidad debe ser mayor a 0.";
+            
+            
         } catch (NumberFormatException e) {
             return "ERROR: La capacidad debe ser un número entero.";
         }
